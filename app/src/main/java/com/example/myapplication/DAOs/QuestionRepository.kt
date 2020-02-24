@@ -4,7 +4,7 @@ import com.example.myapplication.*
 
 interface QuestionRepository{
     suspend fun getQuestions(id_list: List<Long>): List<QuestionData>
-    suspend fun insertAllQuestions(vararg questions: List<QuestionData>)
+    suspend fun insertAllQuestions(vararg questions: QuestionData)
     suspend fun insertQuestion(question: QuestionData)
 }
 
@@ -23,7 +23,14 @@ class QuestionRepositoryImpl (
         return QuestionList
     }
 
-    override suspend fun insertAllQuestions(vararg questions: List<QuestionData>) {
-        multiple_choice_question_dao.insertAllQuestions(questions)
+    override suspend fun insertAllQuestions(vararg questions: QuestionData) {
+        for (item in questions){
+            when(item){
+                MultipleChoiceQuestion::class -> multiple_choice_question_dao.insert(item as MultipleChoiceQuestion)
+                MatchingQuestion::class -> matching_question_dao.insert(item as MatchingQuestion)
+                ShortAnswerQuestion::class -> shortAnswerDao.insert(item as ShortAnswerQuestion)
+                FillInTheBlankQuestion::class -> fillInTheBlankDao.insert(item as FillInTheBlankQuestion)
+            }
+        }
     }
 }
