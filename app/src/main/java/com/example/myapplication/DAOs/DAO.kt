@@ -3,12 +3,10 @@ package com.example.myapplication.DAOs
 import androidx.room.*
 import com.example.myapplication.*
 
-// TODO redo using a single template class.
-
-@Dao
 // Thanks to Gunnar Bernstein https://stackoverflow.com/questions/49322313/android-room-generic-dao
 // Thanks to Dnail Alexiev https://stackoverflow.com/questions/51972843/polymorphic-entities-in-room
 
+@Dao
 interface BaseDao<T>{
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(obj: List<T>?): List<Long>
@@ -29,105 +27,36 @@ interface BaseDao<T>{
     suspend fun update(obj: T?): Int
 }
 @Dao
-interface MultipleChoiceQuestionDao : BaseDao<MultipleChoiceQuestion>  {
+interface QuestionDao : BaseDao<Question>  {
 
-    @Query("SELECT * from MultipleChoiceQuestion")
-    fun getAllQuestions(): List<MultipleChoiceQuestion>
+    @Query("SELECT * from Question")
+    fun getAllQuestions(): List<Question>
 
-    @Query("DELETE FROM MultipleChoiceQuestion")
+    @Query("DELETE FROM Question")
     suspend fun deleteAllQuestions()
 
-    @Query("SELECT * FROM MultipleChoiceQuestion WHERE obj_id in (:id_list)")
-    suspend fun getQuestions(id_list: List<Long>): List<MultipleChoiceQuestion>
+    @Query("SELECT * FROM Question WHERE obj_id in (:id_list)")
+    suspend fun getQuestions(id_list: List<Long>): List<Question>
+
+    @Query("SELECT * FROM Question WHERE obj_id = :id")
+    suspend fun getQuestion(id: Long): Question
 }
 
 @Dao
-interface MatchingQuestionDao : BaseDao<MatchingQuestion> {
+interface ResponseDao : BaseDao<Response>  {
 
-    @Query("SELECT * from MatchingQuestion")
-    fun getAllQuestions(): List<MatchingQuestion>
+    @Query("SELECT * from Response")
+    fun getAllResponses(): List<Response>
 
-    @Query("DELETE FROM MatchingQuestion")
-    suspend fun deleteAllQuestions()
-
-    @Query("SELECT * FROM MatchingQuestion WHERE obj_id in (:id_list)")
-    suspend fun getQuestions(id_list: List<Long>): List<MatchingQuestion>
-}
-
-@Dao
-interface ShortAnswerDao : BaseDao<ShortAnswerQuestion> {
-
-    @Query("SELECT * from ShortAnswerQuestion")
-    fun getAllQuestions(): List<ShortAnswerQuestion>
-
-    @Query("DELETE FROM ShortAnswerQuestion")
-    suspend fun deleteAllQuestions()
-
-    @Query("SELECT * FROM ShortAnswerQuestion WHERE obj_id in (:id_list)")
-    suspend fun getQuestions(id_list: List<Long>) : List<ShortAnswerQuestion>
-}
-
-@Dao
-interface FillInTheBlankDao :BaseDao<FillInTheBlankQuestion>{
-
-    @Query("SELECT * from FillInTheBlankQuestion")
-    fun getAllQuestions(): List<FillInTheBlankQuestion>
-
-    @Query("DELETE FROM FillInTheBlankQuestion")
-    suspend fun deleteAllQuestions()
-
-    @Query("SELECT * FROM FillInTheBlankQuestion WHERE obj_id in (:id_list)")
-    suspend fun getQuestions(id_list: List<Long>): List<FillInTheBlankQuestion>
-}
-
-@Dao
-interface ShortAnswerResponseDao : BaseDao<ShortAnswerResponse>{
-
-    @Query("SELECT * from ShortAnswerResponse")
-    fun getAllResponses(): List<ShortAnswerResponse>
-
-    @Query("DELETE FROM ShortAnswerResponse")
+    @Query("DELETE FROM Response")
     suspend fun deleteAllResponses()
 
-    @Query("SELECT * FROM ShortAnswerResponse WHERE obj_id in (:id_list)")
-    suspend fun getResponses(id_list: List<Long>): List<ShortAnswerResponse>
-}
+    @Query("SELECT * FROM Response WHERE obj_id in (:id_list)")
+    suspend fun getResponses(id_list: List<Long>): List<Response>
 
-@Dao
-interface MultipleChoiceResponseDao : BaseDao<MultipleChoiceResponse> {
+    @Query("SELECT * FROM Response WHERE obj_id = :id")
+    suspend fun getResponse(id: Long): Response
 
-    @Query("SELECT * from MultipleChoiceResponse")
-    fun getAllResponses(): List<MultipleChoiceResponse>
-
-    @Query("DELETE FROM MultipleChoiceResponse")
-    suspend fun deleteAllResponses()
-
-    @Query("SELECT * FROM MultipleChoiceResponse WHERE obj_id in (:id_list)")
-    suspend fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse>
-}
-
-@Dao
-interface FillInTheBlankResponseDao : BaseDao<FillInTheBlankResponse> {
-
-    @Query("SELECT * from FillInTheBlankResponse")
-    fun getAllResponses(): List<FillInTheBlankResponse>
-
-    @Query("DELETE FROM FillInTheBlankResponse")
-    suspend fun deleteAllResponses()
-
-    @Query("SELECT * FROM FillInTheBlankResponse WHERE obj_id in (:id_list)")
-    suspend fun getResponses(id_list: List<Long>): List<FillInTheBlankResponse>
-}
-
-@Dao
-interface MatchingResponseDao: BaseDao<MatchingResponse> {
-
-    @Query("SELECT * from MatchingResponse")
-    fun getAllResponses(): List<MatchingResponse>
-
-    @Query("DELETE FROM MatchingResponse")
-    suspend fun deleteAllResponses()
-
-    @Query("SELECT * FROM MatchingResponse WHERE obj_id in (:id_list)")
-    suspend fun getResponses(id_list: List<Long>): List<MatchingResponse>
+    @Query("SELECT * FROM Response WHERE parent_question_id = :question_id")
+    suspend fun getResponsesByQuestionID(question_id: Long): List<Response>
 }
