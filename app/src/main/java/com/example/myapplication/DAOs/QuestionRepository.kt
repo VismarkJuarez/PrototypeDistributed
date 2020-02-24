@@ -26,11 +26,20 @@ class QuestionRepositoryImpl (
     override suspend fun insertAllQuestions(vararg questions: QuestionData) {
         for (item in questions){
             when(item){
-                MultipleChoiceQuestion::class -> multiple_choice_question_dao.insert(item as MultipleChoiceQuestion)
-                MatchingQuestion::class -> matching_question_dao.insert(item as MatchingQuestion)
-                ShortAnswerQuestion::class -> shortAnswerDao.insert(item as ShortAnswerQuestion)
-                FillInTheBlankQuestion::class -> fillInTheBlankDao.insert(item as FillInTheBlankQuestion)
+                MultipleChoiceQuestion::class -> multiple_choice_question_dao.insert(item as? MultipleChoiceQuestion)
+                MatchingQuestion::class -> matching_question_dao.insert(item as? MatchingQuestion)
+                ShortAnswerQuestion::class -> shortAnswerDao.insert(item as? ShortAnswerQuestion)
+                FillInTheBlankQuestion::class -> fillInTheBlankDao.insert(item as? FillInTheBlankQuestion)
             }
+        }
+    }
+
+    override suspend fun insertQuestion(question: QuestionData) {
+        when(question){
+            MultipleChoiceQuestion::class -> multiple_choice_question_dao.insert(question as? MultipleChoiceQuestion)
+            MatchingQuestion::class -> matching_question_dao.insert(question as? MatchingQuestion)
+            ShortAnswerQuestion::class -> shortAnswerDao.insert(question as? ShortAnswerQuestion)
+            FillInTheBlankQuestion::class -> fillInTheBlankDao.insert(question as? FillInTheBlankQuestion)
         }
     }
 }
