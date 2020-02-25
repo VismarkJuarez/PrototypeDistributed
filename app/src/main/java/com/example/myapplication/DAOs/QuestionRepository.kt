@@ -1,66 +1,61 @@
 package com.example.myapplication.DAOs
 
+import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.*
 
-interface DataRepository{
-    suspend fun getQuestion(id: Long): Question
-    suspend fun getQuestions(id_list: List<Long>): List<Question>
-    suspend fun insertAllQuestions(vararg questions: Question)
-    suspend fun insertQuestion(question: Question)
-    suspend fun getResponses(id_list: List<Long>): List<Response>
-    suspend fun getResponse(id: Long): Response
-    suspend fun getResponsesByQuestionId(question_id: Long): List<Response>
-    suspend fun insertResponse(response: Response)
-    suspend fun insertResponses(vararg responses: Response)
+interface QuestionRepository{
+    suspend fun getQuestion(id: Long): MutableLiveData<MultipleChoiceQuestion>
+    suspend fun getQuestions(id_list: List<Long>): MutableLiveData<List<MultipleChoiceQuestion>>
+    suspend fun insertAllQuestions(vararg multipleChoiceQuestions: MultipleChoiceQuestion)
+    suspend fun insertQuestion(multipleChoiceQuestion: MultipleChoiceQuestion)
+    suspend fun getResponses(id_list: List<Long>): MutableLiveData<List<MultipleChoiceResponse>>
+    suspend fun getResponse(id: Long): MutableLiveData<MultipleChoiceResponse>
+    suspend fun getResponsesByQuestionId(question_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
+    suspend fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse)
+    suspend fun insertResponses(vararg respons: MultipleChoiceResponse)
 }
 
-class DataRepositoryImplementation (
+class QuestionRepositoryImpl (
     private val question_dao: QuestionDao,
     private val response_dao: ResponseDao
 
-): DataRepository{
+): QuestionRepository{
 
-    override suspend fun getQuestions(id_list: List<Long>): List<Question>{
-        val QuestionList: MutableList<Question> = arrayListOf()
-        QuestionList.addAll(question_dao.getQuestions(id_list))
-        return QuestionList
+    override suspend fun getQuestions(id_list: List<Long>): MutableLiveData<List<MultipleChoiceQuestion>>{
+        return question_dao.getQuestions(id_list)
     }
 
-    override suspend fun insertAllQuestions(vararg questions: Question) {
-        val listOfQuestions = questions.toList()
+    override suspend fun insertAllQuestions(vararg multipleChoiceQuestions: MultipleChoiceQuestion) {
+        val listOfQuestions = multipleChoiceQuestions.toList()
         question_dao.insert(listOfQuestions)
         }
 
-    override suspend fun insertQuestion(question: Question) {
-        question_dao.insert(question)
+    override suspend fun insertQuestion(multipleChoiceQuestion: MultipleChoiceQuestion) {
+        question_dao.insert(multipleChoiceQuestion)
     }
 
-    override suspend fun getQuestion(id: Long): Question {
+    override suspend fun getQuestion(id: Long): MutableLiveData<MultipleChoiceQuestion> {
         return question_dao.getQuestion(id)
     }
 
-    override suspend fun getResponse(id: Long): Response {
+    override suspend fun getResponse(id: Long): MutableLiveData<MultipleChoiceResponse> {
         return response_dao.getResponse(id)
     }
 
-    override suspend fun getResponses(id_list: List<Long>): List<Response> {
-        val ResponseList: MutableList<Response> = arrayListOf()
-        ResponseList.addAll(response_dao.getResponses(id_list))
-        return ResponseList
+    override suspend fun getResponses(id_list: List<Long>): MutableLiveData<List<MultipleChoiceResponse>> {
+        return response_dao.getResponses(id_list)
     }
 
-    override suspend fun getResponsesByQuestionId(question_id: Long): List<Response> {
-        val ResponseList: MutableList<Response> = arrayListOf()
-        ResponseList.addAll(response_dao.getResponsesByQuestionID(question_id))
-        return ResponseList
+    override suspend fun getResponsesByQuestionId(question_id: Long): MutableLiveData<List<MultipleChoiceResponse>> {
+        return response_dao.getResponsesByQuestionID(question_id)
     }
 
-    override suspend fun insertResponse(response: Response) {
-        response_dao.insert(response)
+    override suspend fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse) {
+        response_dao.insert(multipleChoiceResponse)
     }
 
-    override suspend fun insertResponses(vararg responses: Response) {
-        response_dao.insert(responses.toList())
+    override suspend fun insertResponses(vararg respons: MultipleChoiceResponse) {
+        response_dao.insert(respons.toList())
     }
 
 

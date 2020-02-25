@@ -1,5 +1,6 @@
 package com.example.myapplication.DAOs
 
+import androidx.lifecycle.MutableLiveData
 import androidx.room.*
 import com.example.myapplication.*
 
@@ -21,42 +22,42 @@ interface BaseDao<T>{
     suspend fun delete(obj: List<T>?)
 
     @Update
-    suspend fun update(obj: List<T>?): Int
+    suspend fun update(obj: List<T>?): List<Int>
 
     @Update
     suspend fun update(obj: T?): Int
 }
 @Dao
-interface QuestionDao : BaseDao<Question>  {
+interface QuestionDao : BaseDao<MultipleChoiceQuestion>  {
 
-    @Query("SELECT * from Question")
-    fun getAllQuestions(): List<Question>
+    @Query("SELECT * from MultipleChoiceQuestion")
+    fun getAllQuestions(): MutableLiveData<List<MultipleChoiceQuestion>>
 
-    @Query("DELETE FROM Question")
+    @Query("DELETE FROM MultipleChoiceQuestion")
     suspend fun deleteAllQuestions()
 
-    @Query("SELECT * FROM Question WHERE obj_id in (:id_list)")
-    suspend fun getQuestions(id_list: List<Long>): List<Question>
+    @Query("SELECT * FROM MultipleChoiceQuestion WHERE obj_id in (:id_list)")
+    suspend fun getQuestions(id_list: List<Long>): MutableLiveData<List<MultipleChoiceQuestion>>
 
-    @Query("SELECT * FROM Question WHERE obj_id = :id")
-    suspend fun getQuestion(id: Long): Question
+    @Query("SELECT * FROM MultipleChoiceQuestion WHERE obj_id = :id")
+    suspend fun getQuestion(id: Long): MutableLiveData<MultipleChoiceQuestion>
 }
 
 @Dao
-interface ResponseDao : BaseDao<Response>  {
+interface ResponseDao : BaseDao<MultipleChoiceResponse>  {
 
-    @Query("SELECT * from Response")
-    fun getAllResponses(): List<Response>
+    @Query("SELECT * from MultipleChoiceResponse")
+    fun getAllResponses(): MutableLiveData<List<MultipleChoiceResponse>>
 
-    @Query("DELETE FROM Response")
+    @Query("DELETE FROM MultipleChoiceResponse")
     suspend fun deleteAllResponses()
 
-    @Query("SELECT * FROM Response WHERE obj_id in (:id_list)")
-    suspend fun getResponses(id_list: List<Long>): List<Response>
+    @Query("SELECT * FROM MultipleChoiceResponse WHERE obj_id in (:id_list)")
+    suspend fun getResponses(id_list: List<Long>): MutableLiveData<List<MultipleChoiceResponse>>
 
-    @Query("SELECT * FROM Response WHERE obj_id = :id")
-    suspend fun getResponse(id: Long): Response
+    @Query("SELECT * FROM MultipleChoiceResponse WHERE obj_id = :id")
+    suspend fun getResponse(id: Long): MutableLiveData<MultipleChoiceResponse>
 
-    @Query("SELECT * FROM Response WHERE parent_question_id = :question_id")
-    suspend fun getResponsesByQuestionID(question_id: Long): List<Response>
+    @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id")
+    suspend fun getResponsesByQuestionID(question_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
 }
