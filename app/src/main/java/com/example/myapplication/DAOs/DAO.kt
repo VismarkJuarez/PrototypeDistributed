@@ -78,5 +78,5 @@ interface QuizWithQuestionsDao: BaseDao<QuizWithQuestions> {
 @Dao
 interface UserDao: BaseDao<User> {
     @Query("SELECT * FROM User where user_id =:user_id")
-    suspend fun getUser(user_id: Long): MutableLiveData<List<User>>
+    suspend fun getUser(user_id: Long): MutableLiveData<User>
 }

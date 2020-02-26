@@ -3,7 +3,7 @@ package com.example.myapplication.DAOs
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.*
 
-interface QuestionRepository{
+interface Repository{
     suspend fun getQuestion(id: Long): MutableLiveData<MultipleChoiceQuestion>
     suspend fun getQuestions(id_list: List<Long>): MutableLiveData<List<MultipleChoiceQuestion>>
     suspend fun insertAllQuestions(vararg multipleChoiceQuestions: MultipleChoiceQuestion)
@@ -13,13 +13,18 @@ interface QuestionRepository{
     suspend fun getResponsesByQuestionId(question_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
     suspend fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse)
     suspend fun insertResponses(vararg respons: MultipleChoiceResponse)
+    suspend fun getResponsesByQuizIdAndQuestionID(quiz_id: Long, question_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
+    suspend fun getResponsesByQuizIdQuestionIDAndUserId(quiz_id: Long, question_id: Long, user_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
+    suspend fun getUser(id: Long): MutableLiveData<User>
 }
 
-class QuestionRepositoryImpl (
+class RepositoryImpl (
     private val question_dao: QuestionDao,
-    private val response_dao: ResponseDao
+    private val response_dao: ResponseDao,
+    private val user_dao: UserDao,
+    private val quiz_with_questions_dao: QuizWithQuestionsDao
 
-): QuestionRepository{
+): Repository{
 
     override suspend fun getQuestions(id_list: List<Long>): MutableLiveData<List<MultipleChoiceQuestion>>{
         return question_dao.getQuestions(id_list)
@@ -56,6 +61,25 @@ class QuestionRepositoryImpl (
 
     override suspend fun insertResponses(vararg respons: MultipleChoiceResponse) {
         response_dao.insert(respons.toList())
+    }
+
+    override suspend fun getResponsesByQuizIdAndQuestionID(
+        quiz_id: Long,
+        question_id: Long
+    ): MutableLiveData<List<MultipleChoiceResponse>> {
+        return response_dao.getResponsesByQuestionIDAndQuizID(question_id, quiz_id)
+    }
+
+    override suspend fun getResponsesByQuizIdQuestionIDAndUserId(
+        quiz_id: Long,
+        question_id: Long,
+        user_id: Long
+    ): MutableLiveData<List<MultipleChoiceResponse>> {
+        return response_dao.getResponsesByQuestionIDAndQuizIDAndUserID(question_id, quiz_id, user_id)
+    }
+
+    override suspend fun getUser(user_id: Long): MutableLiveData<User> {
+        return user_dao.getUser(user_id)
     }
 
 
