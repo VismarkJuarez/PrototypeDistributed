@@ -60,4 +60,23 @@ interface ResponseDao : BaseDao<MultipleChoiceResponse>  {
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id")
     suspend fun getResponsesByQuestionID(question_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
+
+    @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id AND quiz_id = :quiz_id")
+    suspend fun getResponsesByQuestionIDAndQuizID(question_id: Long, quiz_id: Long) : MutableLiveData<List<MultipleChoiceResponse>>
+
+    @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id AND quiz_id = :quiz_id AND user_id = :user_id")
+    suspend fun getResponsesByQuestionIDAndQuizIDAndUserID(question_id: Long, quiz_id: Long, user_id: Long): MutableLiveData<List<MultipleChoiceResponse>>
+}
+
+@Dao
+interface QuizWithQuestionsDao: BaseDao<QuizWithQuestions> {
+    @Transaction
+    @Query("SELECT * FROM Quiz WHERE quiz_id =:quiz_id")
+    suspend fun getQuizWithQuestions(quiz_id: Long): MutableLiveData<List<QuizWithQuestions>>
+}
+
+@Dao
+interface UserDao: BaseDao<User> {
+    @Query("SELECT * FROM User where user_id =:user_id")
+    suspend fun getUser(user_id: Long): MutableLiveData<List<User>>
 }

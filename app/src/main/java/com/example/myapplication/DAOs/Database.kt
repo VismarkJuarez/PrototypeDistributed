@@ -13,6 +13,7 @@ abstract class QuizDatabase: RoomDatabase(){
 
     abstract fun questionDao(): QuestionDao
     abstract fun responseDao(): ResponseDao
+
     companion object {
 
         @Volatile
