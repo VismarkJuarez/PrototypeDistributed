@@ -17,7 +17,7 @@ import com.google.gson.Gson
 class QRCodeGenerator {
     companion object QRFactory {
         val gson = Gson()
-        fun MakeQRCode(text: String, width: Int, height: Int, context: Context): Bitmap {
+        private fun makeQRCodeFromText(text: String, width: Int, height: Int, context: Context): Bitmap {
             val bitmatrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, width, height)
             val pixels = IntArray(width * height)
             for (y in 0 until bitmatrix.height){
@@ -39,7 +39,7 @@ class QRCodeGenerator {
             val ip =
                 Formatter.formatIpAddress(wm!!.connectionInfo.ipAddress)
             val connectionInfo = gson.toJson(ConnectionInfo(ip, 5000, "quiz_primary_server"))
-            return MakeQRCode(text = connectionInfo, width=500, height = 500, context = context)
+            return makeQRCodeFromText(text = connectionInfo, width=500, height = 500, context = context)
         }
     }
 }

@@ -16,6 +16,7 @@ abstract class QuizDatabase: RoomDatabase(){
     abstract fun questionDao(): QuestionDao
     abstract fun responseDao(): ResponseDao
     abstract fun userDao(): UserDao
+    abstract fun quizDao(): QuizDao
 
     companion object {
 

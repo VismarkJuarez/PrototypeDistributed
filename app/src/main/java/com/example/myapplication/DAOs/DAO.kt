@@ -72,20 +72,18 @@ abstract class QuizDao: BaseDao<Quiz> {
     @Insert
     abstract suspend fun insertQuestions(questions: List<MultipleChoiceQuestion>)
 
-    @Query("SELECT * FROM QUIZ WHERE quiz_id = quiz_id")
+    @Query("SELECT * FROM QUIZ WHERE quiz_id = :quiz_id")
     abstract suspend fun getQuiz(quiz_id: Long): Quiz
 
-    @Query("SELECT * FROM MultipleChoiceQuestion WHERE quiz_id = quiz_id")
+    @Query("SELECT * FROM MultipleChoiceQuestion WHERE quiz_id = :quiz_id")
     abstract suspend fun getQuestionList(quiz_id: Long): List<MultipleChoiceQuestion>
 
-    @Transaction
     suspend fun getQuizWithQuestions(quiz_id: Long): Quiz{
         val quiz = getQuiz(quiz_id)
         quiz.questions = getQuestionList(quiz_id)
         return quiz
     }
 
-    @Transaction
     suspend fun insertQuizWithQuestions(quiz: Quiz, questions: List<MultipleChoiceQuestion>){
         insert(quiz)
         insertQuestions(questions)
