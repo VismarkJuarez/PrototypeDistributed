@@ -2,6 +2,8 @@ package com.example.myapplication
 
 import androidx.room.*
 
+// Defined a non used secondary constructor since this is needed by Room.
+// Ideally, in a future release of Room we can remove the secondary constructor
 @Entity(indices = [Index(value=["quiz_name"], unique = true), Index(value=["quiz_id"], unique = true)])
 data class Quiz(
     @PrimaryKey(autoGenerate = true) val quiz_id: Long,

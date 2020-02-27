@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
+import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
