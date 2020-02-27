@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat
 
 // Thanks to https://www.callicoder.com/generate-qr-code-in-java-using-zxing/
 // https://stackoverflow.com/questions/28232116/android-using-zxing-generate-qr-code/30529128
-
+// https://demonuts.com/kotlin-generate-qr-code/
 class QRCodeGenerator {
     companion object QRFactory {
         fun MakeQRCode(text: String, width: Int, height: Int, context: Context): Bitmap {

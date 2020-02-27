@@ -6,19 +6,11 @@
     android:orientation="vertical"
     tools:context="com.example.myapplication.MainActivity">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/etqr"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="5dp"
-        android:hint="Enter String" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btn"
-        android:text="Create Image"
+        android:id="@+id/generate_connection_qr_button"
+        android:text="@string/generate_connection_qr_code"
         android:layout_marginTop="10dp"/>
 
     <ImageView
