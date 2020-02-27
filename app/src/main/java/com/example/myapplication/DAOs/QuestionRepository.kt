@@ -16,12 +16,15 @@ interface Repository{
     suspend fun getResponsesByQuizIdAndQuestionID(quiz_id: Long, question_id: Long): List<MultipleChoiceResponse>
     suspend fun getResponsesByQuizIdQuestionIDAndUserId(quiz_id: Long, question_id: Long, user_id: Long): List<MultipleChoiceResponse>
     suspend fun getUser(user_id: Long): User
+    suspend fun getQuiz(quiz_id: Long): Quiz
+    suspend fun insertQuiz(quiz: Quiz)
 }
 
 class RepositoryImpl (
     private val question_dao: QuestionDao,
     private val response_dao: ResponseDao,
-    private val user_dao: UserDao
+    private val user_dao: UserDao,
+    private val quiz_dao: QuizDao
 
 ): Repository{
 
@@ -79,5 +82,13 @@ class RepositoryImpl (
 
     override suspend fun getUser(user_id: Long): User {
         return user_dao.getUser(user_id)
+    }
+
+    override suspend fun getQuiz(quiz_id: Long): Quiz {
+        return quiz_dao.getQuizWithQuestions(quiz_id)
+    }
+
+    override suspend fun insertQuiz(quiz: Quiz){
+        return quiz_dao.insertQuizWithQuestions(quiz, quiz.questions)
     }
 }
