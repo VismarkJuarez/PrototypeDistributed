@@ -22,12 +22,16 @@ class MainActivity : AppCompatActivity() {
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
 
         generateConnectionQrButton!!.setOnClickListener {
-            try {
-                bitmap = QRCodeGenerator.generateInitialConnectionQRCode(500, 500, this)
-                imageview!!.setImageBitmap(bitmap)
-            } catch (e: WriterException) {
-                e.printStackTrace()
-            }
+                try {
+                    Thread(Runnable {
+                        bitmap = QRCodeGenerator.generateInitialConnectionQRCode(500, 500, this)
+                        imageview!!.post {
+                            imageview!!.setImageBitmap(bitmap)
+                        }
+                    }).start()
+                } catch (e: WriterException) {
+                    e.printStackTrace()
+                }
         }
     }
 

@@ -39,7 +39,6 @@ class QRCodeGenerator {
             val ip =
                 Formatter.formatIpAddress(wm!!.connectionInfo.ipAddress)
             val connectionInfo = gson.toJson(ConnectionInfo(ip, 5000, "quiz_primary_server"))
-            println(connectionInfo)
             return MakeQRCode(text = connectionInfo, width=500, height = 500, context = context)
         }
     }
