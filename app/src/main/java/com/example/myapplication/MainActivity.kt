@@ -2,12 +2,20 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
-import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.example.myapplication.Networking.QuizServer
 import com.google.zxing.WriterException
-import io.javalin.Javalin;
+import com.android.volley.toolbox.Volley as Volley
+import com.example.myapplication.Models.MultipleChoiceResponse
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import org.json.JSONObject
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity() {
@@ -35,6 +43,20 @@ class MainActivity : AppCompatActivity() {
         }
         val quizServer = QuizServer()
         quizServer.main()
+        val gson = Gson()
+        val queue = Volley.newRequestQueue(this)
+        val url = "http://10.0.2.2:5000/recordResponse"
+        val response = MultipleChoiceResponse(12, 1, "Dog", 12, 2)
+        val jsonBody = gson.toJson(response)
+        val jsonObject = JSONObject(jsonBody)
+        val jsonObjectRequest = JsonObjectRequest(Request.Method.POST, url, jsonObject, Response.Listener { response -> println("Received")}, Response.ErrorListener { error -> println(error.toString()) })
+        val url_2 = "http://10.0.2.2:5000/getResponse"
+        val jsonObjectRequestTwo = JsonObjectRequest(Request.Method.GET, url_2, null, Response.Listener { response -> println(response)}, Response.ErrorListener { error -> println(error.toString()) })
+        queue.add(jsonObjectRequest)
+
+        // Meant to test if cache works.
+        Thread.sleep(2000)
+        queue.add(jsonObjectRequestTwo)
     }
 
 }

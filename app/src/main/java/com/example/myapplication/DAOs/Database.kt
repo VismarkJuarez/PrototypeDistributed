@@ -6,6 +6,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.myapplication.Models.MultipleChoiceQuestion
+import com.example.myapplication.Models.MultipleChoiceResponse
+import com.example.myapplication.Models.Quiz
+import com.example.myapplication.Models.User
 
 // Followed the tutorial on https://codelabs.developers.google.com/codelabs/android-room-with-a-view-kotlin/#6
 

@@ -1,9 +1,12 @@
-package com.example.myapplication
+package com.example.myapplication.Models
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.myapplication.Models.MultipleChoiceQuestion
+import com.example.myapplication.Models.Quiz
+import com.example.myapplication.Models.User
 
 
 @Entity(foreignKeys = [ForeignKey(entity = MultipleChoiceQuestion::class, parentColumns = arrayOf("question_id"), childColumns = arrayOf("parent_question_id"), onDelete = ForeignKey.CASCADE),

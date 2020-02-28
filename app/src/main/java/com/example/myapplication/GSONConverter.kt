@@ -1,5 +1,8 @@
 package com.example.myapplication
 
+import com.example.myapplication.Models.MultipleChoiceQuestion
+import com.example.myapplication.Models.MultipleChoiceResponse
+import com.example.myapplication.Models.User
 import com.google.gson.Gson
 
 class GSONConverter(val gson: Gson = Gson()){
