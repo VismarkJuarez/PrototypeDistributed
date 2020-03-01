@@ -73,13 +73,13 @@ interface ResponseDao : BaseDao<MultipleChoiceResponse>  {
 abstract class QuizDao: BaseDao<Quiz> {
 
     @Insert
-    abstract  fun insertQuestions(questions: List<MultipleChoiceQuestion>)
+    abstract fun insertQuestions(questions: List<MultipleChoiceQuestion>)
 
     @Query("SELECT * FROM QUIZ WHERE quiz_id = :quiz_id")
-    abstract  fun getQuiz(quiz_id: Long): Quiz
+    abstract fun getQuiz(quiz_id: Long): Quiz
 
     @Query("SELECT * FROM MultipleChoiceQuestion WHERE quiz_id = :quiz_id")
-    abstract  fun getQuestionList(quiz_id: Long): List<MultipleChoiceQuestion>
+    abstract fun getQuestionList(quiz_id: Long): List<MultipleChoiceQuestion>
 
      fun getQuizWithQuestions(quiz_id: Long): Quiz {
         val quiz = getQuiz(quiz_id)

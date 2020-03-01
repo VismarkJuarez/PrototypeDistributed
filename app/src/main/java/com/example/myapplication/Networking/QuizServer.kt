@@ -9,7 +9,7 @@ class QuizServer {
     fun main() {
 
         val cache = Cache()
-        val app = Javalin.create().start(5001)
+        val app = Javalin.create().start(5000)
         val gson = Gson()
 
         app.routes {
@@ -19,10 +19,13 @@ class QuizServer {
                     MultipleChoiceResponse::class.java
                 )
                 cache.insertResponse(response)
+                print(cache.response_list)
                 ctx.json(response)
             }
-            get("/getResponse") { ctx ->
-                val response = cache.getResponse(12)
+            get("/getResponse/:id") { ctx ->
+                val id = ctx.pathParam("id").toLong()
+                print(id)
+                val response = cache.getResponse(id)
                 if (response != null) {
                     ctx.json(response)
                 }

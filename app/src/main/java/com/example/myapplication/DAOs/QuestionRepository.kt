@@ -117,7 +117,7 @@ class Cache: Repository{
     }
 
     override fun getResponse(id: Long): MultipleChoiceResponse? {
-        return response_list.get(12)
+        return response_list.get(id)
     }
 
     override  fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse?> {
