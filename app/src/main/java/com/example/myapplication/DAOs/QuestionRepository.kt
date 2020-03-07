@@ -11,7 +11,7 @@ interface Repository{
      fun insertAllQuestions(vararg multipleChoiceQuestions: MultipleChoiceQuestion)
      fun insertQuestion(multipleChoiceQuestion: MultipleChoiceQuestion)
      fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse?>
-    fun getResponse(id: Long): MultipleChoiceResponse?
+     fun getResponse(id: Long): MultipleChoiceResponse?
      fun getResponsesByQuestionId(question_id: Long): List<MultipleChoiceResponse?>
      fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse)
      fun insertResponses(vararg respons: MultipleChoiceResponse)
