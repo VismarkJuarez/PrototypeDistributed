@@ -6,11 +6,11 @@ syntax = "proto2";
 // the device's generated responses to use that user_id.
 
 message MultipleChoiceResponse {
-    optional int64 id = 1;
-    required int64 question = 2;
-    required string answer = 3;
-    required int64 user_id = 4;
-    required int64 quiz_id = 5;
+     optional int64 id = 1;
+     required int64 question = 2;
+     required string answer = 3;
+     required int64 user_id = 4;
+     required int64 quiz_id = 5;
 }
 
 message MultipleChoiceQuestion {
@@ -21,7 +21,6 @@ message MultipleChoiceQuestion {
     required int64 quiz_id = 5;
 }
 
-
 // This is meant to be sent from server to a device. It gives that device association with that user_id.
 message UserAssignment{
     required int64 user_id = 1;
@@ -31,11 +30,4 @@ message UserAssignment{
 message UpdateUserNickName{
     required int64 user_id = 1;
     required string nickname = 2;
-}
-
-message UpdateResponse {
-    required int64 id = 1;
-    required string answer = 2;
-    required int64 user_id = 3;
-    required int64 quiz_id = 4;
 }
