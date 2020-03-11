@@ -10,7 +10,7 @@ class UDPClient {
     fun sendMessage(message: String, host: String, port: Int) {
         val socket = DatagramSocket()
         println("Message: $message sent to $host at port $port")
-        val data = message.toByteArray()
+        val data = message.toByteArray(Charsets.UTF_8)
         try {
             val packet = DatagramPacket(data, data.size, InetAddress.getByName(host), port)
             socket.send(packet)

@@ -27,7 +27,8 @@ class UDPServer: Runnable{
                 socket.receive(packet)
                 println("Packet received!")
                 for (listener in listeners){
-                    listener.onUDP(packet.data.toString())
+                    val stringOfData = String(packet.data, 0, packet.length)
+                    listener.onUDP(stringOfData)
                 }
             }
         }
@@ -38,7 +39,7 @@ class UDPServer: Runnable{
     }
     override fun run() {
         println("Listening for UDP packets")
-        listenForUDPPackets(5000)
+        listenForUDPPackets(6000)
     }
 
     fun addListener(listener: UDPListener){

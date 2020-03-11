@@ -3,18 +3,14 @@ package com.example.myapplication
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.widget.Button
-import android.widget.ImageView
+import android.widget.*
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
-import com.example.myapplication.Networking.QuizServer
 import com.google.zxing.WriterException
 import com.android.volley.toolbox.Volley as Volley
 import com.example.myapplication.Models.MultipleChoiceResponse
-import com.example.myapplication.Networking.UDPClient
-import com.example.myapplication.Networking.UDPListener
-import com.example.myapplication.Networking.UDPServer
+import com.example.myapplication.Networking.*
 import com.google.gson.Gson
 import org.json.JSONObject
 
@@ -28,10 +24,18 @@ class MainActivity : AppCompatActivity(), UDPListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         imageview = findViewById(R.id.iv)
-        val queue = Volley.newRequestQueue(this)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
+        val ipEditor = findViewById<EditText>(R.id.ip_enter)
+        val setIP = findViewById<Button>(R.id.set_ip)
+        var ip = "0.0.0.0"
+        setIP.setOnClickListener{
+            ip = ipEditor.text.toString()
+            Toast.makeText(applicationContext, "Ip is now $ip", Toast.LENGTH_SHORT).show()
+        }
+
+
         val generateResponseButton = findViewById<Button>(R.id.generate_response)
-        val gson = Gson()
+
 
         /* We don't want to block the UI thread */
         val server = UDPServer()
@@ -40,12 +44,17 @@ class MainActivity : AppCompatActivity(), UDPListener {
         udpDataListener.start()
 
 
+        val networkInformation = NetworkInformation.NetworkInfoFactory.getNetworkInfo(this)
+        println(networkInformation.ip)
         val udpClient = UDPClient()
+
+        // Change this to 5000 in testing.
         generateResponseButton!!.setOnClickListener {
                 Thread(Runnable {
-                udpClient.sendMessage("DOG", "10.0.2.2",5000)
+                udpClient.sendMessage("DOG", ip,6000)
         }).start()
         }
+
         generateConnectionQrButton!!.setOnClickListener {
             try {
                 Thread(Runnable {
@@ -58,26 +67,15 @@ class MainActivity : AppCompatActivity(), UDPListener {
                 e.printStackTrace()
             }
         }
-        /*
-        val quizServer = QuizServer()
-        quizServer.main()
-        val url = "http://10.0.2.2:5000/recordResponse"
-        val response = MultipleChoiceResponse(12, 1, "Dog", 12, 2)
-        val jsonBody = gson.toJson(response)
-        val jsonObject = JSONObject(jsonBody)
-        val jsonObjectRequest = JsonObjectRequest(Request.Method.POST, url, jsonObject, Response.Listener { response -> println("Received")}, Response.ErrorListener { error -> println(error.toString()) })
-        val url_2 = "http://10.0.2.2:5000/getResponse/12"
-        val jsonObjectRequestTwo = JsonObjectRequest(Request.Method.GET, url_2, null, Response.Listener {  response -> println(response)}, Response.ErrorListener { error -> println(error.toString()) })
-        queue.add(jsonObjectRequest)
 
-         */
-
-        // Meant to test if cache works.
     }
 
     override fun onUDP(data: String) {
         Thread(Runnable {
             println(data)
+            runOnUiThread {
+                Toast.makeText(applicationContext, data, Toast.LENGTH_SHORT).show()
+            }
         }).start()
     }
 }

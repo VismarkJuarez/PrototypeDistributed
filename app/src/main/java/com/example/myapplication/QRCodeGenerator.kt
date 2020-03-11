@@ -31,18 +31,12 @@ class QRCodeGenerator {
             }
         }
         fun generateInitialConnectionQRCode(width: Int, height: Int, context: Context): Bitmap{
-            val networkInfo = NetworkInformation.getNetworkInfo()
+            val networkInfo = NetworkInformation.getNetworkInfo(context)
             val connectionInfo = gson.toJson(networkInfo)
             return makeQRCodeFromText(text = connectionInfo, width=500, height = 500, context = context)
         }
     }
 }
-
-data class ConnectionInfo (
-    val ip: String,
-    val port: Int,
-    val type: String
-)
 
 /*
 10.0.2.1 -> Router/gateway address

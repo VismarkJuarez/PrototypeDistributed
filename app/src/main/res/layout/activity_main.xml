@@ -26,4 +26,17 @@
         android:layout_marginTop="20dp"
         android:id="@+id/iv"/>
 
+    <EditText
+        android:id="@+id/ip_enter"
+        android:paddingTop="30dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="Write the IP"/>
+
+    <Button
+        android:id="@+id/set_ip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set IP"/>
+
 </LinearLayout>

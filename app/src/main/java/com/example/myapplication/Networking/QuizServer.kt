@@ -9,7 +9,7 @@ class QuizServer {
     fun main() {
 
         val cache = Cache()
-        val app = Javalin.create().start(5000)
+        val app = Javalin.create().start(6000)
         val gson = Gson()
 
         app.routes {
