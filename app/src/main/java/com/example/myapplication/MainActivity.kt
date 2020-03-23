@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), UDPListener {
         // Change this to 5000 in testing.
         generateResponseButton!!.setOnClickListener {
                 Thread(Runnable {
-                udpClient.sendMessage("DOG", ip,6000)
+                udpClient.sendMessage("DOG", ip,5000)
         }).start()
         }
 
