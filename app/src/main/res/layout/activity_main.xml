@@ -32,18 +32,24 @@
         android:paddingTop="30dp"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:text="Write the IP"/>
+        android:text="@string/write_the_ip"/>
 
     <Button
         android:id="@+id/set_ip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set IP"/>
+        android:text="@string/set_ip"/>
 
     <Button
         android:id="@+id/create_question"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create a Question"/>
+        android:text="@string/create_a_question"/>
+
+    <Button
+        android:id="@+id/answer_active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/answer_the_active_question"/>
 
 </LinearLayout>

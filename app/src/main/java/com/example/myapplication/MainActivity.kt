@@ -18,6 +18,8 @@ import com.example.myapplication.Models.MultipleChoiceQuestion
 import com.google.zxing.WriterException
 import com.android.volley.toolbox.Volley as Volley
 import com.example.myapplication.Models.MultipleChoiceResponse
+import com.example.myapplication.Models.Quiz
+import com.example.myapplication.Models.User
 import com.example.myapplication.Networking.*
 import com.google.gson.Gson
 import org.json.JSONObject
@@ -46,6 +48,8 @@ class MainActivity : AppCompatActivity(), UDPListener {
         val setIP = findViewById<Button>(R.id.set_ip)
         val generateResponseButton = findViewById<Button>(R.id.generate_response)
         val dataaccess = Room.databaseBuilder(this, QuizDatabase::class.java, "Brian").build()
+        val answerQuestionButton = findViewById<Button>(R.id.answer_active)
+        val responseID = UUID.randomUUID().toString()
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
 
 
@@ -56,6 +60,23 @@ class MainActivity : AppCompatActivity(), UDPListener {
         setIP.setOnClickListener{
             ip = ipEditor.text.toString()
             Toast.makeText(applicationContext, "Ip is now $ip", Toast.LENGTH_SHORT).show()
+        }
+
+        answerQuestionButton.setOnClickListener{
+            Thread(Runnable {
+            val intent = Intent(this, AnswerQuestionActivity::class.java).also{
+                val active_question = repository!!.getQuestion("5bca90f1-d5a4-46c5-8394-0b5cebbe1944")
+                val user = User(nickname="Brian", user_id = "5bca90f1-d5a4-46c5-8394-0b5cebbe1945")
+                val quiz = Quiz("5bca90f1-d5a4-46c5-8394-0b5cebbe1946", "BobMarley")
+                it.putExtra("active_question", active_question)
+                repository!!.insertUser(user)
+                repository!!.insertQuiz(quiz)
+                it.putExtra("user_id", user.user_id)
+                it.putExtra("response_id", responseID)
+                it.putExtra("quiz_id", quiz.quiz_id)
+            }
+                startActivityForResult(intent, 2)
+            }).start()
         }
 
 
@@ -112,7 +133,7 @@ class MainActivity : AppCompatActivity(), UDPListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1)  {
+        if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 val question = data?.getParcelableExtra("question") as MultipleChoiceQuestion
                 questionRepo.insertQuestion(question)
@@ -120,6 +141,15 @@ class MainActivity : AppCompatActivity(), UDPListener {
                     repository?.insertQuestion(question)
                 }).start()
 
+            }
+        }
+        if (requestCode == 2){
+            if (resultCode == Activity.RESULT_OK){
+                val response = data?.getParcelableExtra("response") as MultipleChoiceResponse
+                questionRepo.insertResponse(response)
+                Thread(Runnable{
+                    repository?.insertResponse(response)
+                }).start()
             }
         }
     }

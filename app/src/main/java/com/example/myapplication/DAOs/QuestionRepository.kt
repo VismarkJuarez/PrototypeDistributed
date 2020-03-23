@@ -97,6 +97,10 @@ class RepositoryImpl (
     fun getAllQuestions(): List<MultipleChoiceQuestion>{
         return question_dao.getAllQuestions()
     }
+
+    fun insertUser(user: User){
+        user_dao.insert(user)
+    }
 }
 
 class Cache: Repository{
