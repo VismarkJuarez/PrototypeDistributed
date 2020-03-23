@@ -11,4 +11,7 @@
     <string name="create_a_question">Create a Question</string>
     <string name="set_ip">Set IP</string>
     <string name="write_the_ip">Write the IP</string>
+    <string name="return_from_activity">Return from activity</string>
+    <string name="view_questions">View questions</string>
+    <string name="browse_questions">Browse questions</string>
 </resources>

@@ -5,25 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.myapplication.AnswerQuestionActivity">
-
-
-    <TextView
-        android:id="@+id/active_question_prompt"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <Spinner
-        android:id="@+id/active_question_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
+    tools:context="com.example.myapplication.BrowseQuestions">
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/record_response"
-        android:text="@string/generate_a_response"
+        android:id="@+id/return_from_activity"
+        android:text="@string/return_from_activity"
         android:layout_marginTop="10dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/view_questions"
+        android:text="@string/view_questions"
+        android:layout_marginTop="10dp"/>
+
+    <ListView
+        android:id="@+id/question_browser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

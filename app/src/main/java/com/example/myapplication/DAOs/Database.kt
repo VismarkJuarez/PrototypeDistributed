@@ -36,7 +36,7 @@ abstract class QuizDatabase: RoomDatabase(){
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     QuizDatabase::class.java,
-                    "quiz_database").build()
+                    "Brian").build()
                 INSTANCE = instance
                 return instance
             }

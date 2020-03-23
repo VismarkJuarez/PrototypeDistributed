@@ -47,15 +47,21 @@ class MainActivity : AppCompatActivity(), UDPListener {
         val ipEditor = findViewById<EditText>(R.id.ip_enter)
         val setIP = findViewById<Button>(R.id.set_ip)
         val generateResponseButton = findViewById<Button>(R.id.generate_response)
-        val dataaccess = Room.databaseBuilder(this, QuizDatabase::class.java, "Brian").build()
+        val dataaccess = QuizDatabase.getDatabase(this)
         val answerQuestionButton = findViewById<Button>(R.id.answer_active)
         val responseID = UUID.randomUUID().toString()
+        val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
 
 
         val quizId = UUID.randomUUID().toString()
 
         var ip = "0.0.0.0"
+
+        browseQuestionsButton.setOnClickListener{
+            val intent = Intent(this, BrowseQuestions::class.java)
+            startActivity(intent)
+        }
 
         setIP.setOnClickListener{
             ip = ipEditor.text.toString()
