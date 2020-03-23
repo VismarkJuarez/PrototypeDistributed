@@ -93,6 +93,10 @@ class RepositoryImpl (
     override  fun insertQuiz(quiz: Quiz){
         return quiz_dao.insertQuizWithQuestions(quiz, quiz.questions)
     }
+
+    fun getAllQuestions(): List<MultipleChoiceQuestion>{
+        return question_dao.getAllQuestions()
+    }
 }
 
 class Cache: Repository{

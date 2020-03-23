@@ -6,11 +6,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.*
+import androidx.room.Room
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuestionDao
+import com.example.myapplication.DAOs.QuizDatabase
+import com.example.myapplication.DAOs.RepositoryImpl
 import com.example.myapplication.Models.MultipleChoiceQuestion
 import com.google.zxing.WriterException
 import com.android.volley.toolbox.Volley as Volley
@@ -25,7 +28,13 @@ class MainActivity : AppCompatActivity(), UDPListener {
     private var bitmap: Bitmap? = null
     private var imageview: ImageView? = null
     private var generateConnectionQrButton: Button? = null
+
+    // The in memory object cache!
     val questionRepo = Cache()
+
+    // The actual persisted database!
+    var repository: RepositoryImpl? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +45,8 @@ class MainActivity : AppCompatActivity(), UDPListener {
         val ipEditor = findViewById<EditText>(R.id.ip_enter)
         val setIP = findViewById<Button>(R.id.set_ip)
         val generateResponseButton = findViewById<Button>(R.id.generate_response)
+        val dataaccess = Room.databaseBuilder(this, QuizDatabase::class.java, "Brian").build()
+        repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
 
 
         val quizId = UUID.randomUUID().toString()
@@ -94,10 +105,9 @@ class MainActivity : AppCompatActivity(), UDPListener {
             runOnUiThread {
                 Toast.makeText(applicationContext, data, Toast.LENGTH_SHORT).show()
             }
+            // Debug here. It prints out all questions in the database.
+            println(repository?.getAllQuestions())
         }).start()
-        for (question in questionRepo.questions.values){
-            println(question)
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -106,6 +116,10 @@ class MainActivity : AppCompatActivity(), UDPListener {
             if (resultCode == Activity.RESULT_OK) {
                 val question = data?.getParcelableExtra("question") as MultipleChoiceQuestion
                 questionRepo.insertQuestion(question)
+                Thread(Runnable {
+                    repository?.insertQuestion(question)
+                }).start()
+
             }
         }
     }
