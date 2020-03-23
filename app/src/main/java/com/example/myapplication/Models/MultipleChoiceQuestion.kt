@@ -1,16 +1,18 @@
 package com.example.myapplication.Models
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 
-@Serializable
+@Parcelize
 @Entity
 data class MultipleChoiceQuestion(
-    @SerialId(1) @PrimaryKey(autoGenerate = true) val question_id: Long,
-    @SerialId(2) val answer: String,
-    @SerialId(3) val choices: List<String>,
-    @SerialId(4) val prompt: String,
-    @SerialId(5) val quiz_id: Long
-)
+    @PrimaryKey val question_id: String,
+    val answer: String,
+    val choices: List<String>,
+    val prompt: String,
+    val quiz_id: String
+) : Parcelable

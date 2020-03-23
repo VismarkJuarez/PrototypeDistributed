@@ -5,9 +5,9 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 
-class UDPClient {
+class UDPClient: Client {
 
-    fun sendMessage(message: String, host: String, port: Int) {
+    override fun sendMessage(message: String, host: String, port: Int){
         val socket = DatagramSocket()
         println("Message: $message sent to $host at port $port")
         val data = message.toByteArray(Charsets.UTF_8)

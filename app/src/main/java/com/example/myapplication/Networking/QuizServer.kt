@@ -23,7 +23,7 @@ class QuizServer {
                 ctx.json(response)
             }
             get("/getResponse/:id") { ctx ->
-                val id = ctx.pathParam("id").toLong()
+                val id = ctx.pathParam("id")
                 print(id)
                 val response = cache.getResponse(id)
                 if (response != null) {

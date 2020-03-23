@@ -1,13 +1,15 @@
 package com.example.myapplication.Models
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 
-@Serializable
+@Parcelize
 @Entity
 data class User(
-    @SerialId(1) @PrimaryKey(autoGenerate = true) val user_id: Long,
-    @SerialId(2) val nickname: String
-)
+    @PrimaryKey val user_id: String,
+    val nickname: String
+) : Parcelable

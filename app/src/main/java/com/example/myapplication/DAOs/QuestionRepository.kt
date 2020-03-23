@@ -6,19 +6,19 @@ import com.example.myapplication.Models.Quiz
 import com.example.myapplication.Models.User
 
 interface Repository{
-     fun getQuestion(id: Long): MultipleChoiceQuestion?
-     fun getQuestions(id_list: List<Long>): List<MultipleChoiceQuestion?>
+     fun getQuestion(id: String): MultipleChoiceQuestion?
+     fun getQuestions(id_list: List<String>): List<MultipleChoiceQuestion?>
      fun insertAllQuestions(vararg multipleChoiceQuestions: MultipleChoiceQuestion)
      fun insertQuestion(multipleChoiceQuestion: MultipleChoiceQuestion)
-     fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse?>
-     fun getResponse(id: Long): MultipleChoiceResponse?
-     fun getResponsesByQuestionId(question_id: Long): List<MultipleChoiceResponse?>
+     fun getResponses(id_list: List<String>): List<MultipleChoiceResponse?>
+     fun getResponse(id: String): MultipleChoiceResponse?
+     fun getResponsesByQuestionId(question_id: String): List<MultipleChoiceResponse?>
      fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse)
      fun insertResponses(vararg respons: MultipleChoiceResponse)
-     fun getResponsesByQuizIdAndQuestionID(quiz_id: Long, question_id: Long): List<MultipleChoiceResponse?>
-     fun getResponsesByQuizIdQuestionIDAndUserId(quiz_id: Long, question_id: Long, user_id: Long): List<MultipleChoiceResponse?>
-     fun getUser(user_id: Long): User?
-     fun getQuiz(quiz_id: Long): Quiz?
+     fun getResponsesByQuizIdAndQuestionID(quiz_id: String, question_id: String): List<MultipleChoiceResponse?>
+     fun getResponsesByQuizIdQuestionIDAndUserId(quiz_id: String, question_id: String, user_id: String): List<MultipleChoiceResponse?>
+     fun getUser(user_id: String): User?
+     fun getQuiz(quiz_id: String): Quiz?
      fun insertQuiz(quiz: Quiz)
 }
 
@@ -30,7 +30,7 @@ class RepositoryImpl (
 
 ): Repository{
 
-    override  fun getQuestions(id_list: List<Long>): List<MultipleChoiceQuestion?>{
+    override  fun getQuestions(id_list: List<String>): List<MultipleChoiceQuestion?>{
         return question_dao.getQuestions(id_list)
     }
 
@@ -43,19 +43,19 @@ class RepositoryImpl (
         question_dao.insert(multipleChoiceQuestion)
     }
 
-    override  fun getQuestion(id: Long): MultipleChoiceQuestion? {
+    override  fun getQuestion(id: String): MultipleChoiceQuestion? {
         return question_dao.getQuestion(id)
     }
 
-    override fun getResponse(id: Long): MultipleChoiceResponse? {
+    override fun getResponse(id: String): MultipleChoiceResponse? {
         return response_dao.getResponse(id)
     }
 
-    override  fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse?> {
+    override  fun getResponses(id_list: List<String>): List<MultipleChoiceResponse?> {
         return response_dao.getResponses(id_list)
     }
 
-    override  fun getResponsesByQuestionId(question_id: Long): List<MultipleChoiceResponse?> {
+    override  fun getResponsesByQuestionId(question_id: String): List<MultipleChoiceResponse?> {
         return response_dao.getResponsesByQuestionID(question_id)
     }
 
@@ -68,25 +68,25 @@ class RepositoryImpl (
     }
 
     override  fun getResponsesByQuizIdAndQuestionID(
-        quiz_id: Long,
-        question_id: Long
+        quiz_id: String,
+        question_id: String
     ): List<MultipleChoiceResponse?> {
         return response_dao.getResponsesByQuestionIDAndQuizID(question_id, quiz_id)
     }
 
     override  fun getResponsesByQuizIdQuestionIDAndUserId(
-        quiz_id: Long,
-        question_id: Long,
-        user_id: Long
+        quiz_id: String,
+        question_id: String,
+        user_id: String
     ): List<MultipleChoiceResponse?> {
         return response_dao.getResponsesByQuestionIDAndQuizIDAndUserID(question_id, quiz_id, user_id)
     }
 
-    override  fun getUser(user_id: Long): User? {
+    override  fun getUser(user_id: String): User? {
         return user_dao.getUser(user_id)
     }
 
-    override  fun getQuiz(quiz_id: Long): Quiz? {
+    override  fun getQuiz(quiz_id: String): Quiz? {
         return quiz_dao.getQuizWithQuestions(quiz_id)
     }
 
@@ -97,53 +97,53 @@ class RepositoryImpl (
 
 class Cache: Repository{
 
-    val questions = hashMapOf<Long, MultipleChoiceQuestion>()
-    val response_list = hashMapOf<Long, MultipleChoiceResponse>()
+    val questions = hashMapOf<String, MultipleChoiceQuestion>()
+    val response_list = hashMapOf<String, MultipleChoiceResponse>()
 
     // User Submitted Questions
     val submitted_questions = hashMapOf<String, MultipleChoiceQuestion>()
-    val users_list = hashMapOf<Long, User>()
+    val users_list = hashMapOf<String, User>()
 
-    override  fun getQuestion(id: Long): MultipleChoiceQuestion? {
+    override  fun getQuestion(id: String): MultipleChoiceQuestion? {
         return questions[id]
     }
 
-    override  fun getQuestions(id_list: List<Long>): List<MultipleChoiceQuestion?> {
+    override  fun getQuestions(id_list: List<String>): List<MultipleChoiceQuestion?> {
         return questions.values.toList()
     }
 
-    override  fun getQuiz(quiz_id: Long): Quiz? {
+    override  fun getQuiz(quiz_id: String): Quiz? {
         return Quiz(quiz_id = quiz_id, quiz_name = "Unnamed", questions = questions.values.toList())
     }
 
-    override fun getResponse(id: Long): MultipleChoiceResponse? {
+    override fun getResponse(id: String): MultipleChoiceResponse? {
         return response_list.get(id)
     }
 
-    override  fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse?> {
+    override  fun getResponses(id_list: List<String>): List<MultipleChoiceResponse?> {
         return response_list.values.toList()
     }
 
-    override  fun getResponsesByQuestionId(question_id: Long): List<MultipleChoiceResponse?> {
+    override  fun getResponsesByQuestionId(question_id: String): List<MultipleChoiceResponse?> {
         return response_list.values.toList().filter { it.parent_question_id == question_id }
     }
 
     override  fun getResponsesByQuizIdAndQuestionID(
-        quiz_id: Long,
-        question_id: Long
+        quiz_id: String,
+        question_id: String
     ): List<MultipleChoiceResponse?> {
         return response_list.values.toList().filter{ (it.parent_question_id == question_id) and (it.quiz_id == quiz_id)}
     }
 
     override  fun getResponsesByQuizIdQuestionIDAndUserId(
-        quiz_id: Long,
-        question_id: Long,
-        user_id: Long
+        quiz_id: String,
+        question_id: String,
+        user_id: String
     ): List<MultipleChoiceResponse?> {
         return response_list.values.toList().filter{ (it.parent_question_id == question_id) and (it.quiz_id == quiz_id) and (it.user_id == user_id)}
     }
 
-    override  fun getUser(user_id: Long): User? {
+    override  fun getUser(user_id: String): User? {
         return users_list[user_id]
     }
 

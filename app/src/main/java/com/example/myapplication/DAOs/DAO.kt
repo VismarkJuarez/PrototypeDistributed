@@ -36,10 +36,10 @@ interface QuestionDao : BaseDao<MultipleChoiceQuestion>  {
      fun deleteAllQuestions()
 
     @Query("SELECT * FROM MultipleChoiceQuestion WHERE question_id in (:id_list)")
-     fun getQuestions(id_list: List<Long>): List<MultipleChoiceQuestion>
+     fun getQuestions(id_list: List<String>): List<MultipleChoiceQuestion>
 
     @Query("SELECT * FROM MultipleChoiceQuestion WHERE question_id = :id")
-     fun getQuestion(id: Long): MultipleChoiceQuestion
+     fun getQuestion(id: String): MultipleChoiceQuestion
 }
 
 @Dao
@@ -52,19 +52,19 @@ interface ResponseDao : BaseDao<MultipleChoiceResponse>  {
      fun deleteAllResponses()
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE response_id in (:id_list)")
-     fun getResponses(id_list: List<Long>): List<MultipleChoiceResponse>
+     fun getResponses(id_list: List<String>): List<MultipleChoiceResponse>
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE response_id = :id")
-    fun getResponse(id: Long): MultipleChoiceResponse
+    fun getResponse(id: String): MultipleChoiceResponse
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id")
-     fun getResponsesByQuestionID(question_id: Long): List<MultipleChoiceResponse>
+     fun getResponsesByQuestionID(question_id: String): List<MultipleChoiceResponse>
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id AND quiz_id = :quiz_id")
-     fun getResponsesByQuestionIDAndQuizID(question_id: Long, quiz_id: Long) : List<MultipleChoiceResponse>
+     fun getResponsesByQuestionIDAndQuizID(question_id: String, quiz_id: String) : List<MultipleChoiceResponse>
 
     @Query("SELECT * FROM MultipleChoiceResponse WHERE parent_question_id = :question_id AND quiz_id = :quiz_id AND user_id = :user_id")
-     fun getResponsesByQuestionIDAndQuizIDAndUserID(question_id: Long, quiz_id: Long, user_id: Long): List<MultipleChoiceResponse>
+     fun getResponsesByQuestionIDAndQuizIDAndUserID(question_id: String, quiz_id: String, user_id: String): List<MultipleChoiceResponse>
 }
 
 // Thanks a ton to https://stackoverflow.com/questions/44667160/android-room-insert-relation-entities-using-room
@@ -76,12 +76,12 @@ abstract class QuizDao: BaseDao<Quiz> {
     abstract fun insertQuestions(questions: List<MultipleChoiceQuestion>)
 
     @Query("SELECT * FROM QUIZ WHERE quiz_id = :quiz_id")
-    abstract fun getQuiz(quiz_id: Long): Quiz
+    abstract fun getQuiz(quiz_id: String): Quiz
 
     @Query("SELECT * FROM MultipleChoiceQuestion WHERE quiz_id = :quiz_id")
-    abstract fun getQuestionList(quiz_id: Long): List<MultipleChoiceQuestion>
+    abstract fun getQuestionList(quiz_id: String): List<MultipleChoiceQuestion>
 
-     fun getQuizWithQuestions(quiz_id: Long): Quiz {
+     fun getQuizWithQuestions(quiz_id: String): Quiz {
         val quiz = getQuiz(quiz_id)
         quiz.questions = getQuestionList(quiz_id)
         return quiz
@@ -97,5 +97,5 @@ abstract class QuizDao: BaseDao<Quiz> {
 @Dao
 interface UserDao: BaseDao<User> {
     @Query("SELECT * FROM User where user_id =:user_id")
-     fun getUser(user_id: Long): User
+     fun getUser(user_id: String): User
 }

@@ -10,14 +10,14 @@ import java.net.InetAddress
 // https://stackoverflow.com/questions/19540715/send-and-receive-data-on-udp-socket-java-android
 // Woodie was very helpful here. Thanks a lot
 
-class UDPServer: Runnable{
+class UDPServer: Server{
 
     private val listeners = mutableListOf<UDPListener>()
 
     // Can use composition by setting this to var to be more flexible.
     private val messageSender = UDPClient()
 
-    private fun listenForUDPPackets(port: Int){
+    override fun listenForPackets(port: Int){
         val buffer = ByteArray(4096)
         var socket: DatagramSocket? = null
         try {
@@ -39,18 +39,18 @@ class UDPServer: Runnable{
     }
     override fun run() {
         println("Listening for UDP packets")
-        listenForUDPPackets(6000)
+        listenForPackets(6000)
     }
 
-    fun addListener(listener: UDPListener){
+    override fun addListener(listener: UDPListener){
         listeners.add(listener)
     }
 
-    fun removeListener(listener: UDPListener){
+    override fun removeListener(listener: UDPListener){
         listeners.remove(listener)
     }
 
-    fun clearListeners(){
+    override fun clearListeners(){
         listeners.clear()
     }
 }
