@@ -4,22 +4,25 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
+import android.net.Network
 import android.os.Bundle
 import android.widget.*
+import androidx.lifecycle.LiveData
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
 import com.example.myapplication.DAOs.RepositoryImpl
-import com.example.myapplication.Models.MultipleChoiceQuestion
+import com.example.myapplication.Models.*
 import com.google.zxing.WriterException
-import com.example.myapplication.Models.MultipleChoiceResponse
-import com.example.myapplication.Models.Quiz
-import com.example.myapplication.Models.User
 import com.example.myapplication.Networking.*
 import com.google.gson.Gson
 import java.util.*
+import kotlin.collections.HashMap
+import kotlin.concurrent.schedule
+import kotlin.concurrent.scheduleAtFixedRate
+
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
-class MainActivity : AppCompatActivity(), UDPListener {
+class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     private var bitmap: Bitmap? = null
     private var imageview: ImageView? = null
     private var generateConnectionQrButton: Button? = null
@@ -29,18 +32,25 @@ class MainActivity : AppCompatActivity(), UDPListener {
     var networkInformation: NetworkInformation? = null
     var activeQuestion: MultipleChoiceQuestion? = null
     val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
-    val clientTwo = NetworkInformation("10.0.2.2", 6000, "client")
+    val clientTwo = NetworkInformation("10.0.2.2", 5023, "client")
     val clients = arrayListOf<NetworkInformation>().also{
         it.add(clientOne)
         it.add(clientTwo)
     }
 
+    val clientMonitor = hashMapOf<NetworkInformation, String>().also{
+        for (client in clients){
+            it.put(client, "green")
+        }
+    }
+
+
 
     // The in memory object cache!
-    val questionRepo = Cache()
+    private val questionRepo = Cache()
 
     // The actual persisted database!
-    var repository: RepositoryImpl? = null
+    private var repository: RepositoryImpl? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,13 +60,15 @@ class MainActivity : AppCompatActivity(), UDPListener {
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
         val create_question_button = findViewById<Button>(R.id.create_question)
         networkInformation = NetworkInformation.NetworkInfoFactory.getNetworkInfo(this)
-        val ipEditor = findViewById<EditText>(R.id.ip_enter)
-        val setIP = findViewById<Button>(R.id.set_ip)
         val dataaccess = QuizDatabase.getDatabase(this)
         val answerQuestionButton = findViewById<Button>(R.id.answer_active)
         val responseID = UUID.randomUUID().toString()
         val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
+        Timer("Heartbeat", false).schedule(100, 30000){
+          emitHeartBeat()
+        }
+
 
 
         val quizId = UUID.randomUUID().toString()
@@ -66,36 +78,38 @@ class MainActivity : AppCompatActivity(), UDPListener {
             startActivityForResult(intent, 3)
         }
 
-        setIP.setOnClickListener{
-            ip = ipEditor.text.toString()
-            Toast.makeText(applicationContext, "Ip is now $ip", Toast.LENGTH_SHORT).show()
-        }
-
         answerQuestionButton.setOnClickListener{
             Thread(Runnable {
             val intent = Intent(this, AnswerQuestionActivity::class.java).also{
                 if (activeQuestion == null) {
-                    activeQuestion = repository!!.getQuestion("32988dcf-bbc4-4b71-9d51-9dc4ec8b01a6")
+                    runOnUiThread{
+                    Toast.makeText(applicationContext,"No active question", Toast.LENGTH_SHORT).show()
                 }
-                val user = User(nickname="Brian", user_id = "5bca90f1-d5a4-46c5-8394-0b5cebbe1945")
-                val quiz = Quiz("5bca90f1-d5a4-46c5-8394-0b5cebbe1946", "BobMarley")
-                it.putExtra("active_question", activeQuestion)
-                repository!!.insertUser(user)
-                repository!!.insertQuiz(quiz)
-                it.putExtra("user_id", user.user_id)
-                it.putExtra("response_id", responseID)
-                it.putExtra("quiz_id", quiz.quiz_id)
+                }
+                else {
+                    val user =
+                        User(nickname = "Brian", user_id = "5bca90f1-d5a4-46c5-8394-0b5cebbe1945")
+                    val quiz = Quiz(activeQuestion!!.quiz_id, "BobMarley")
+                    it.putExtra("active_question", activeQuestion)
+                    repository!!.insertUser(user)
+                    repository!!.insertQuiz(quiz)
+                    it.putExtra("user_id", user.user_id)
+                    it.putExtra("response_id", responseID)
+                    it.putExtra("quiz_id", quiz.quiz_id)
+                }
             }
                 startActivityForResult(intent, 2)
             }).start()
         }
 
-        val udpClient = UDPClient()
-
         /* We don't want to block the UI thread */
         val server = UDPServer()
         server.addListener(this)
         val udpDataListener = Thread(server)
+        if (networkInformation!!.ip == "10.0.2.18"){
+            server.setPort(5024)
+            println("THIS IS TRUE")
+        }
         udpDataListener.start()
 
 
@@ -135,7 +149,25 @@ class MainActivity : AppCompatActivity(), UDPListener {
                 activeQuestion = message as MultipleChoiceQuestion
                 println("Activating a question!")
             }
+            if (type == "hb"){
+                onHeartBeat(message as HeartBeat)
+            }
         }).start()
+    }
+
+    private fun emitHeartBeat(){
+        println("Emitting heartbeat")
+        Thread(Runnable{
+            for (client in clients){
+                val heartbeat = HeartBeat(ip = networkInformation!!.ip, port = networkInformation!!.port.toString())
+                UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
+            }
+        }).start()
+    }
+
+    override fun onHeartBeat(heartBeat: HeartBeat) {
+        clientMonitor[NetworkInformation(heartBeat.ip, heartBeat.port.toInt(), "client")] = "Yellow"
+        println(clientMonitor)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -159,7 +191,9 @@ class MainActivity : AppCompatActivity(), UDPListener {
                 val json = gson.toJson(jsonTree)
                 questionRepo.insertResponse(response)
                 Thread(Runnable{
-                    UDPClient().sendMessage(json, ip,5000)
+                    for (client in clients) {
+                        UDPClient().sendMessage(json, client.ip, client.port)
+                    }
                 }).start()
             }
         }
@@ -170,10 +204,9 @@ class MainActivity : AppCompatActivity(), UDPListener {
                     it.asJsonObject.addProperty("type", "multiple_choice_question")
                 }
                 val json = gson.toJson(jsonTree)
-                val client_messenger = UDPClient()
                 Thread(Runnable{
                     for (client in clients){
-                        client_messenger.sendMessage(json, client.ip, client.port)
+                        UDPClient().sendMessage(json, client.ip, client.port)
                     }
                 }).start()
             }

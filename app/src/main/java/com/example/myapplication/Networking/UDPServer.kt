@@ -16,12 +16,17 @@ class UDPServer: Server{
 
     // Can use composition by setting this to var to be more flexible.
     private val messageSender = UDPClient()
+    private var port = 6000
+
+    fun setPort(port_to_set: Int){
+        port = port_to_set
+    }
 
     override fun listenForPackets(port: Int){
         val buffer = ByteArray(4096)
         var socket: DatagramSocket? = null
         try {
-            socket = DatagramSocket(6000)
+            socket = DatagramSocket(port)
             val packet = DatagramPacket(buffer, buffer.size)
             while (true) {
                 socket.receive(packet)
@@ -39,7 +44,7 @@ class UDPServer: Server{
     }
     override fun run() {
         println("Listening for UDP packets")
-        listenForPackets(6000)
+        listenForPackets(port)
     }
 
     override fun addListener(listener: UDPListener){

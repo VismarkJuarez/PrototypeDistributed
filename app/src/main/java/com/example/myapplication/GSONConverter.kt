@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import com.example.myapplication.Models.HeartBeat
 import com.example.myapplication.Models.MultipleChoiceQuestion
 import com.example.myapplication.Models.MultipleChoiceResponse
 import com.example.myapplication.Models.User
@@ -13,6 +14,7 @@ class GSONConverter(val gson: Gson = Gson()){
             "multiple_choice_question" -> return gson.fromJson(json_string, MultipleChoiceQuestion::class.java)
             "multiple_choice_response" -> return gson.fromJson(json_string, MultipleChoiceResponse::class.java)
             "user" -> return gson.fromJson(json_string, User::class.java)
+            "hb" -> return gson.fromJson(json_string, HeartBeat::class.java)
         }
         return returnValue
     }
