@@ -1,10 +1,7 @@
 package com.example.myapplication.Models
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room.*
 import kotlinx.android.parcel.Parcelize
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
