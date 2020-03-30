@@ -113,4 +113,4 @@ OK
 redir add udp:5023:5024
 ```
 
-That will redirect any data to your emulator.
+That will redirect the appropriate data to your server emulator.
