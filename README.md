@@ -114,3 +114,5 @@ redir add udp:5023:5024
 ```
 
 That will redirect the appropriate data to your server emulator.
+
+## Configuring Port-forwarding on the Client Emulator:
