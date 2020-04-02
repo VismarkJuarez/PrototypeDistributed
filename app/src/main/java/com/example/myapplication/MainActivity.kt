@@ -16,6 +16,7 @@ import com.google.zxing.WriterException
 import com.example.myapplication.Networking.*
 import com.google.gson.Gson
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.HashMap
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
@@ -38,9 +39,16 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         it.add(clientTwo)
     }
 
-    val clientMonitor = hashMapOf<NetworkInformation, String>().also{
+
+    data class PeerStatus(
+        var color: String = "green",
+        var last_received: AtomicInteger = AtomicInteger(0),
+        var other_client_failure_count: AtomicInteger = AtomicInteger(0)
+    )
+
+    val clientMonitor = hashMapOf<NetworkInformation, PeerStatus>().also{
         for (client in clients){
-            it.put(client, "green")
+            it.put(client, PeerStatus())
         }
     }
 
@@ -65,7 +73,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         val responseID = UUID.randomUUID().toString()
         val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
-        Timer("Heartbeat", false).schedule(100, 30000){
+        Timer("Heartbeat", false).schedule(100, 10000){
           emitHeartBeat()
         }
 
@@ -80,7 +88,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
 
         answerQuestionButton.setOnClickListener{
             Thread(Runnable {
-            val intent = Intent(this, AnswerQuestionActivity::class.java).also{
+            val answer_intent = Intent(this, AnswerQuestionActivity::class.java).also{
                 if (activeQuestion == null) {
                     runOnUiThread{
                     Toast.makeText(applicationContext,"No active question", Toast.LENGTH_SHORT).show()
@@ -96,9 +104,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                     it.putExtra("user_id", user.user_id)
                     it.putExtra("response_id", responseID)
                     it.putExtra("quiz_id", quiz.quiz_id)
+                    startActivityForResult(it, 2)
                 }
             }
-                startActivityForResult(intent, 2)
             }).start()
         }
 
@@ -144,7 +152,6 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
             // Debug here. It prints out all questions in the database.
             val type = gson.fromJson(data, Map::class.java)["type"] as String
             val message = converter.convertToClass(type, data)
-            println(message)
             if (type == "multiple_choice_question"){
                 activeQuestion = message as MultipleChoiceQuestion
                 println("Activating a question!")
@@ -155,19 +162,40 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         }).start()
     }
 
+    // This is the scheduled function. Ideally this can be refactored.
     private fun emitHeartBeat(){
         println("Emitting heartbeat")
         Thread(Runnable{
             for (client in clients){
                 val heartbeat = HeartBeat(ip = networkInformation!!.ip, port = networkInformation!!.port.toString())
                 UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
+                if (clientMonitor[client]?.last_received!!.get() == 2){
+                    clientMonitor[client]?.color = "yellow"
+                }
+                else if (clientMonitor[client]!!.last_received.get() > 2){
+                    clientMonitor[client]?.color = "red"
+                }
+                clientMonitor[client]!!.last_received.getAndIncrement()
             }
         }).start()
     }
 
+    // This is the listener function
     override fun onHeartBeat(heartBeat: HeartBeat) {
-        clientMonitor[NetworkInformation(heartBeat.ip, heartBeat.port.toInt(), "client")] = "Yellow"
-        println(clientMonitor)
+        var debugInt: Int = 5023
+        if (heartBeat.port.toInt() == 6000){
+            debugInt = 5000
+        }
+        if (heartBeat?.ip == "10.0.2.18"){
+            debugInt = 5023
+        }
+        println(heartBeat)
+        val client = clientMonitor[NetworkInformation("10.0.2.2", debugInt, "client")]
+        if (client != null){
+            client?.color = "green"
+            client?.last_received!!.getAndSet(0)
+            println(clientMonitor)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
