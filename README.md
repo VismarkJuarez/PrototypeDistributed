@@ -116,3 +116,19 @@ redir add udp:5023:5024
 That will redirect the appropriate data to your server emulator.
 
 ## Configuring Port-forwarding on the Client Emulator:
+
+1). Telnet into the client emulator device:
+```bash
+telnet localhost 5556
+```
+
+2). Authenticate:
+
+```bash
+auth xFrXqZnNxq0yqeBy
+```
+
+3). Run the following command to redirect data to the device:
+```bash
+redir add udp:5000:6000
+```
