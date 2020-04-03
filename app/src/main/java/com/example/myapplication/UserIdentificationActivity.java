@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.myapplication.Models.UserType;
 
@@ -104,7 +105,32 @@ public class UserIdentificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 userName = userNameEditText.getText().toString();
+
+                //Ensure a non-null username and userType have been created:
+                if(isAllFieldsPopulated()) {
+                    Toast.makeText(getApplicationContext(),"Welcome, " + userName,Toast.LENGTH_SHORT).show();
+
+                    //TODO: Open new activity
+                } else {
+                    Toast.makeText(getApplicationContext(),"Whoops! Please specify your User Type, and provide a non-empty username.",Toast.LENGTH_SHORT).show();
+                }
             }
         });
+    }
+
+    /**
+     * Ensures that the user populated enough information to derive
+     * `userName` and `userType` values.
+     *
+     * @return true when non-null `username` and `userType` values exist.
+     */
+    public boolean isAllFieldsPopulated() {
+        boolean verdict = false;
+
+        if(userName != null && userType != null) {
+            verdict = true;
+        }
+
+        return verdict;
     }
 }
