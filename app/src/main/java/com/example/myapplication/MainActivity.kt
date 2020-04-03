@@ -57,9 +57,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main)
         //Prompt the user to enter basic details about themselves
-        setContentView(R.layout.activity_user_identification);
+        //setContentView(R.layout.activity_user_identification);
 
 
 

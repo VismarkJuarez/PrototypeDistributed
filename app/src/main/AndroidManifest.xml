@@ -19,14 +19,14 @@
         <activity android:name=".UserIdentificationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".BrowseQuestions" />
         <activity android:name=".AnswerQuestionActivity" />
         <activity android:name=".CreateQuestionActivity" />
-        <activity android:name=".MainActivity">
-        </activity>
+        <activity android:name=".MainActivity"></activity>
     </application>
 
 </manifest>
