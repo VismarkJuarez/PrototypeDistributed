@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -110,8 +111,11 @@ public class UserIdentificationActivity extends AppCompatActivity {
                 if(isAllFieldsPopulated()) {
                     Toast.makeText(getApplicationContext(),"Welcome, " + userName,Toast.LENGTH_SHORT).show();
 
-                    //TODO: Open new activity
+                    //Open the MainActivity for downstream execution.
+                    Intent mainActivity = new Intent(UserIdentificationActivity.this, MainActivity.class);
+                    startActivity(mainActivity);
                 } else {
+                    //Let the user know they screwed up.
                     Toast.makeText(getApplicationContext(),"Whoops! Please specify your User Type, and provide a non-empty username.",Toast.LENGTH_SHORT).show();
                 }
             }
