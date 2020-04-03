@@ -23,6 +23,7 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
+    private var userType:UserType? = null
     private var bitmap: Bitmap? = null
     private var imageview: ImageView? = null
     private var generateConnectionQrButton: Button? = null
@@ -55,7 +56,14 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        //setContentView(R.layout.activity_main)
+        //Prompt the user to enter basic details about themselves
+        setContentView(R.layout.activity_user_identification);
+
+
+
+
         imageview = findViewById(R.id.iv)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
         val create_question_button = findViewById<Button>(R.id.create_question)
