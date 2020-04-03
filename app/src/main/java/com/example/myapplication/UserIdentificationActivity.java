@@ -5,14 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.example.myapplication.Models.UserType;
 
 public class UserIdentificationActivity extends AppCompatActivity {
 
     //Listing relevant Activity buttons and input values
-    private UserType userType = null;
-    private String userName = null;
+    private UserType userType;
+    private EditText userNameEditText;
+    private String userName;
     private Button instructorButton, studentButton, submitButton;
 
     @Override
@@ -29,6 +31,7 @@ public class UserIdentificationActivity extends AppCompatActivity {
         instructorButton = (Button)findViewById(R.id.instructorButton);
         studentButton = (Button)findViewById(R.id.studentButton);
         submitButton = (Button)findViewById(R.id.submitUserDetailsButton);
+        userNameEditText = (EditText)findViewById(R.id.usernameEditText);
 
         //setup onClick listeners for all buttons
         setupOnClickListeners();
@@ -65,7 +68,7 @@ public class UserIdentificationActivity extends AppCompatActivity {
                 userType = UserType.INSTRUCTOR;
             }
         });
-        
+
 
         /**
          * onClick configuration for the `studentButton`.
@@ -91,6 +94,16 @@ public class UserIdentificationActivity extends AppCompatActivity {
 
                 //Finally, set the value of `userType` to UserType.STUDENT
                 userType = UserType.STUDENT;
+            }
+        });
+
+        /**
+         * Extracts the user's desired username from the `userNameEditText` component.
+         */
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                userName = userNameEditText.getText().toString();
             }
         });
     }
