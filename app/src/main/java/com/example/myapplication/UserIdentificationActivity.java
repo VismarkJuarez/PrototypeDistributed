@@ -101,6 +101,7 @@ public class UserIdentificationActivity extends AppCompatActivity {
 
         /**
          * Extracts the user's desired username from the `userNameEditText` component.
+         * Opens up the MainActivity and provides it relevant info.
          */
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,8 +112,14 @@ public class UserIdentificationActivity extends AppCompatActivity {
                 if(isAllFieldsPopulated()) {
                     Toast.makeText(getApplicationContext(),"Welcome, " + userName,Toast.LENGTH_SHORT).show();
 
-                    //Open the MainActivity for downstream execution.
+                    //Specify the activity to be opened
                     Intent mainActivity = new Intent(UserIdentificationActivity.this, MainActivity.class);
+
+                    //Passing in "extra" data to the mainActivity for use by the MainActivity
+                    mainActivity.putExtra("EXTRA_USER_NAME", userName);
+                    mainActivity.putExtra("EXTRA_USER_TYPE", userType);
+
+                    //Start the MainActivity
                     startActivity(mainActivity);
                 } else {
                     //Let the user know they screwed up.

@@ -2,23 +2,24 @@ package com.example.myapplication
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
-import android.net.Network
 import android.os.Bundle
-import android.widget.*
-import androidx.lifecycle.LiveData
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
 import com.example.myapplication.DAOs.RepositoryImpl
 import com.example.myapplication.Models.*
-import com.google.zxing.WriterException
-import com.example.myapplication.Networking.*
+import com.example.myapplication.Networking.NetworkInformation
+import com.example.myapplication.Networking.UDPClient
+import com.example.myapplication.Networking.UDPListener
+import com.example.myapplication.Networking.UDPServer
 import com.google.gson.Gson
+import com.google.zxing.WriterException
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.concurrent.schedule
-import kotlin.concurrent.scheduleAtFixedRate
 
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
@@ -58,11 +59,10 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-        //Prompt the user to enter basic details about themselves
-        //setContentView(R.layout.activity_user_identification);
 
-
-
+        //TODO: print statements are sloppy. Make a logger.
+        println("username: " + getIntent().getStringExtra("EXTRA_USER_NAME"))
+        println("userType: " + intent.getSerializableExtra("EXTRA_USER_TYPE"))
 
         imageview = findViewById(R.id.iv)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
