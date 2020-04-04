@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.DAOs.Cache
@@ -61,8 +62,15 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         setContentView(R.layout.activity_main)
 
         //TODO: print statements are sloppy. Make a logger.
-        println("username: " + getIntent().getStringExtra("EXTRA_USER_NAME"))
-        println("userType: " + intent.getSerializableExtra("EXTRA_USER_TYPE"))
+        var typeOfUser = intent.getSerializableExtra("EXTRA_USER_TYPE").toString()
+        var userName = getIntent().getStringExtra("EXTRA_USER_NAME")
+
+        println("username: " + userName)
+        println("userType: " + typeOfUser)
+
+        //specify the userType in the UI's label
+        var userMetadataTextView: TextView = findViewById(R.id.userMetadata);
+        userMetadataTextView.setText("userType: " + typeOfUser + "\n" + "Username: " + userName)
 
         imageview = findViewById(R.id.iv)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
