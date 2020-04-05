@@ -5,6 +5,7 @@ import java.lang.Exception
 import java.net.DatagramSocket
 import java.net.DatagramPacket
 import java.net.InetAddress
+import java.net.InetSocketAddress
 
 // https://stackoverflow.com/questions/56874545/how-to-get-udp-data-constant-listening-on-kotlin
 // https://stackoverflow.com/questions/19540715/send-and-receive-data-on-udp-socket-java-android
@@ -26,7 +27,7 @@ class UDPServer: Server{
         val buffer = ByteArray(4096)
         var socket: DatagramSocket? = null
         try {
-            socket = DatagramSocket(port)
+            socket = DatagramSocket(InetSocketAddress(port))
             val packet = DatagramPacket(buffer, buffer.size)
             while (true) {
                 socket.receive(packet)
