@@ -152,6 +152,18 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
             if (type == "hb"){
                 onHeartBeat(message as HeartBeat)
             }
+            if (type == "failure_detected"){
+                val failedClient =  message as NetworkInformation
+                clientMonitor.getClient(failedClient).also {
+                    it!!.other_client_failure_count.getAndIncrement()
+                }
+            }
+            if (type == "restored_connection"){
+                val restoredClient = message as NetworkInformation
+                clientMonitor.getClient(restoredClient).also{
+                    it!!.other_client_failure_count.getAndDecrement()
+                }
+            }
         }).start()
     }
 
@@ -161,6 +173,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         Thread(Runnable{
             for (client in clientMonitor.getClients()) {
                 val status = clientMonitor.getClient(client)
+                if (status?.other_client_failure_count!!.get() >= clientMonitor.getClients().size/2){
+                    println("FAILOVER PROTOCOL INITIATED")
+                }
                 val heartbeat = HeartBeat(
                     ip = networkInformation!!.ip,
                     port = networkInformation!!.port.toString(),
@@ -183,6 +198,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                         status.color = "red"
                         val data = hashMapOf<String, String>()
                         data.put("type", "failure_detected")
+                        data.put("ip", client.ip)
+                        data.put("port", client.port.toString())
+                        data.put("type", client.type)
                         val message = gson.toJson(data)
                         for (client in clientMonitor.getClients()){
                             UDPClient().sendMessage(message, client.ip, client.port)
