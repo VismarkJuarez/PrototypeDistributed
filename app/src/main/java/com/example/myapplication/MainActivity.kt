@@ -4,10 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
-import android.net.Network
 import android.os.Bundle
 import android.widget.*
-import androidx.lifecycle.LiveData
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
 import com.example.myapplication.DAOs.RepositoryImpl
@@ -17,10 +15,8 @@ import com.example.myapplication.Networking.*
 import com.google.gson.Gson
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.HashMap
 import kotlin.concurrent.schedule
-import kotlin.concurrent.scheduleAtFixedRate
-
+import java.util.concurrent.ConcurrentHashMap
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
@@ -33,7 +29,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     var networkInformation: NetworkInformation? = null
     var activeQuestion: MultipleChoiceQuestion? = null
     val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
-    val clientTwo = NetworkInformation("10.0.2.2", 5023, "client")
+    val clientTwo = NetworkInformation("10.0.2.2", 5023, "server")
     val clients = arrayListOf<NetworkInformation>().also{
         it.add(clientOne)
         it.add(clientTwo)
@@ -46,7 +42,8 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         var other_client_failure_count: AtomicInteger = AtomicInteger(0)
     )
 
-    val clientMonitor = hashMapOf<NetworkInformation, PeerStatus>().also{
+
+    val clientMonitor = ConcurrentHashMap<NetworkInformation, PeerStatus>().also{
         for (client in clients){
             it.put(client, PeerStatus())
         }
@@ -120,7 +117,6 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         }
         udpDataListener.start()
 
-
         generateConnectionQrButton!!.setOnClickListener {
             try {
                 Thread(Runnable {
@@ -166,19 +162,38 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     private fun emitHeartBeat(){
         println("Emitting heartbeat")
         Thread(Runnable{
-            for (client in clients){
-                val heartbeat = HeartBeat(ip = networkInformation!!.ip, port = networkInformation!!.port.toString())
-                UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
-                if (clientMonitor[client]?.last_received!!.get() == 2){
-                    clientMonitor[client]?.color = "yellow"
+            for (client in clients) {
+                val heartbeat = HeartBeat(
+                    ip = networkInformation!!.ip,
+                    port = networkInformation!!.port.toString()
+                )
+                // DEBUG
+                println(clientMonitor)
+                if (client == clientTwo) {
+                    UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
                 }
-                else if (clientMonitor[client]!!.last_received.get() > 2){
-                    clientMonitor[client]?.color = "red"
+                if (clientMonitor[client]?.last_received!!.get() == 2) {
+                    clientMonitor[client]?.color = "yellow"
+                } else if (clientMonitor[client]!!.last_received.get() > 2) {
+                    if (clientMonitor[client]?.color != "red"){
+                        clientMonitor[client]?.color = "red"
+                        if (client.type == "server") {
+                            val data = hashMapOf<String, String>()
+                            data.put("type", "failure_detected")
+                            val message =
+                                gson.toJson(data)
+                            UDPClient().BroadcastMessage(message, 5024, this)
+                            runOnUiThread{
+                                Toast.makeText(applicationContext,"Failure detected at $client", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
                 clientMonitor[client]!!.last_received.getAndIncrement()
             }
         }).start()
     }
+
 
     // This is the listener function
     override fun onHeartBeat(heartBeat: HeartBeat) {
