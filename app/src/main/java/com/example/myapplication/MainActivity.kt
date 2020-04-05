@@ -36,13 +36,16 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     var activeQuestion: MultipleChoiceQuestion? = null
     val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
     val clientTwo = NetworkInformation("10.0.2.2", 5023, "client")
+    val clientThree = NetworkInformation("10.0.2.2", 5026, "client");
     val clients = arrayListOf<NetworkInformation>().also{
         it.add(clientOne)
         it.add(clientTwo)
+        it.add(clientThree)
     }
 
     val clientMonitor = hashMapOf<NetworkInformation, String>().also{
         for (client in clients){
+            println("Adding the following client: " + client )
             it.put(client, "green")
         }
     }
@@ -176,6 +179,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         Thread(Runnable{
             for (client in clients){
                 val heartbeat = HeartBeat(ip = networkInformation!!.ip, port = networkInformation!!.port.toString())
+
+                println(networkInformation!!.ip + " " + networkInformation!!.port.toString())
+
                 UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
             }
         }).start()
