@@ -1,5 +1,6 @@
 package com.example.myapplication.DAOs
 
+import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.Models.MultipleChoiceQuestion
 import com.example.myapplication.Models.MultipleChoiceResponse
 import com.example.myapplication.Models.Quiz
@@ -165,11 +166,11 @@ class Cache: Repository{
         questions[multipleChoiceQuestion.question_id] = multipleChoiceQuestion
     }
 
-    override  fun insertQuiz(quiz: Quiz) {
+    override fun insertQuiz(quiz: Quiz) {
         return
     }
 
-    override  fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse) {
+    override fun insertResponse(multipleChoiceResponse: MultipleChoiceResponse) {
         response_list[multipleChoiceResponse.response_id] = multipleChoiceResponse
     }
 

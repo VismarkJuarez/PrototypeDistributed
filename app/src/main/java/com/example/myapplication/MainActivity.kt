@@ -1,9 +1,11 @@
 package com.example.myapplication
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.widget.*
 import com.example.myapplication.DAOs.Cache
@@ -20,33 +22,16 @@ import java.util.concurrent.ConcurrentHashMap
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
-    private var bitmap: Bitmap? = null
-    private var imageview: ImageView? = null
-    private var generateConnectionQrButton: Button? = null
+
     val converter = GSONConverter()
     val gson = Gson()
+    val debug = true
+    var isServer = false
     var networkInformation: NetworkInformation?= null
     var activeQuestion: MultipleChoiceQuestion? = null
     val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
     val clientTwo = NetworkInformation("10.0.2.2", 5023, "server")
-    val clients = arrayListOf<NetworkInformation>().also{
-        it.add(clientOne)
-        it.add(clientTwo)
-    }
-
-
-    data class PeerStatus(
-        var color: String = "green",
-        var last_received: AtomicInteger = AtomicInteger(0),
-        var other_client_failure_count: AtomicInteger = AtomicInteger(0)
-    )
-
-
-    val clientMonitor = ConcurrentHashMap<NetworkInformation, PeerStatus>().also{
-        for (client in clients){
-            it.put(client, PeerStatus())
-        }
-    }
+    val clientMonitor = ClientMonitor(arrayListOf(clientOne, clientTwo))
 
 
 
@@ -60,8 +45,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        imageview = findViewById(R.id.iv)
-        generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
+        var bitmap: Bitmap? = null
+        var imageview = findViewById<ImageView>(R.id.iv)
+        val generateConnectionQrButton = findViewById<Button>(R.id.generate_connection_qr_button)
         val create_question_button = findViewById<Button>(R.id.create_question)
         val answerQuestionButton = findViewById<Button>(R.id.answer_active)
         val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
@@ -75,7 +61,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
 
         answerQuestionButton.setOnClickListener{
             Thread(Runnable {
-                val answer_intent = Intent(this, AnswerQuestionActivity::class.java).also{
+                Intent(this, AnswerQuestionActivity::class.java).also{
                     if (activeQuestion == null) {
                         runOnUiThread{
                             Toast.makeText(applicationContext,"No active question", Toast.LENGTH_SHORT).show()
@@ -96,31 +82,6 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                 }
             }).start()
         }
-        /* We don't want to block the UI thread */
-        val server = UDPServer()
-        server.addListener(this)
-        val udpDataListener = Thread(server)
-        networkInformation = NetworkInformation.getNetworkInfo(this)
-        if (networkInformation!!.ip == "10.0.2.18"){
-            server.setPort(5024)
-            networkInformation!!.port = 5024
-            networkInformation!!.type = "server"
-        }
-        udpDataListener.start()
-
-
-        val dataaccess = QuizDatabase.getDatabase(this)
-        repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
-
-        Timer("Heartbeat", false).schedule(100, 5000){
-          emitHeartBeat()
-        }
-
-
-
-        val quizId = UUID.randomUUID().toString()
-
-
 
         generateConnectionQrButton!!.setOnClickListener {
             try {
@@ -135,12 +96,43 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
             }
         }
 
+        val quizId = UUID.randomUUID().toString()
         create_question_button.setOnClickListener{
             val intent = Intent(this, CreateQuestionActivity::class.java).also{
                 it.putExtra("quizID", quizId)
             }
             startActivityForResult(intent, 1)
         }
+
+
+        /* We don't want to block the UI thread */
+        val server = UDPServer()
+        server.addListener(this)
+        val udpDataListener = Thread(server)
+        networkInformation = NetworkInformation.getNetworkInfo(this)
+
+
+        if (debug == true) {
+            if (networkInformation!!.ip == "10.0.2.18") {
+                isServer = true
+                server.setPort(5024)
+                networkInformation!!.port = 5024
+                networkInformation!!.type = "server"
+            }
+        }
+        if (isServer){
+            networkInformation!!.type = "server"
+        }
+        udpDataListener.start()
+
+
+        val dataaccess = QuizDatabase.getDatabase(this)
+        repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
+
+        Timer("Heartbeat", false).schedule(100, 5000){
+          emitHeartBeat()
+        }
+
 
     }
 
@@ -163,11 +155,12 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         }).start()
     }
 
-    // This is the scheduled function. Ideally this can be refactored.
+    // This is the scheduled function. Ideally this can also be packaged with the onHeartBeat etc.
     private fun emitHeartBeat(){
         println("Emitting heartbeat")
         Thread(Runnable{
-            for (client in clients) {
+            for (client in clientMonitor.getClients()) {
+                val status = clientMonitor.getClient(client)
                 val heartbeat = HeartBeat(
                     ip = networkInformation!!.ip,
                     port = networkInformation!!.port.toString(),
@@ -175,19 +168,23 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                 )
                 // DEBUG if the heartbeat is going to be sent to the server then actually send it out to "10.0.2.2" Change this to client.ip in prod
                 println(clientMonitor)
-                if (client == clientTwo) {
-                    UDPClient().sendMessage(gson.toJson(heartbeat), "10.0.2.2", client.port)
+                if (debug == true) {
+                    if (client == clientTwo) {
+                        UDPClient().sendMessage(gson.toJson(heartbeat), "10.0.2.2", client.port)
+                    }
                 }
-                if (clientMonitor[client]?.last_received!!.get() == 2) {
-                    clientMonitor[client]?.color = "yellow"
-                } else if (clientMonitor[client]!!.last_received.get() > 2) {
-                    if (clientMonitor[client]?.color != "red"){
-                        clientMonitor[client]?.color = "red"
-                        println("HERE")
+                else {
+                    UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
+                }
+                if (status?.last_received!!.get() == 2) {
+                    status.color = "yellow"
+                } else if (status.last_received.get() > 2) {
+                    if (status.color != "red"){
+                        status.color = "red"
                         val data = hashMapOf<String, String>()
                         data.put("type", "failure_detected")
                         val message = gson.toJson(data)
-                        for (client in clients){
+                        for (client in clientMonitor.getClients()){
                             UDPClient().sendMessage(message, client.ip, client.port)
                         }
                         runOnUiThread{
@@ -195,20 +192,27 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                         }
                         }
                 }
-                clientMonitor[client]!!.last_received.getAndIncrement()
+                status.last_received.getAndIncrement()
             }
         }).start()
     }
 
-
-    // This is the listener function
+    // This is the listener function. It can be packaged together with the clientMonitor functionality.
     override fun onHeartBeat(heartBeat: HeartBeat) {
         println("Heartbeat received!")
-        var debugInt: Int = 5000
-        if (heartBeat.ip == "10.0.2.18"){
-            debugInt = 5023
+        var ip = heartBeat.ip
+        var port = heartBeat.port.toInt()
+        var peerType = heartBeat.peer_type
+        if (debug){
+            ip = "10.0.2.2"
+            port = 5000
+            if (heartBeat.ip == "10.0.2.18"){
+                port = 5023
+            }
         }
-        val client = clientMonitor[NetworkInformation("10.0.2.2", debugInt, heartBeat.peer_type)]
+        val client = clientMonitor.getClient(NetworkInformation(ip, port, peerType))
+
+
         if (client != null){
             client.color = "green"
             client.last_received.getAndSet(0)
@@ -236,7 +240,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                 val json = gson.toJson(jsonTree)
                 questionRepo.insertResponse(response)
                 Thread(Runnable{
-                    for (client in clients) {
+                    for (client in clientMonitor.getClients()) {
                         UDPClient().sendMessage(json, client.ip, client.port)
                     }
                 }).start()
@@ -250,7 +254,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                 }
                 val json = gson.toJson(jsonTree)
                 Thread(Runnable{
-                    for (client in clients){
+                    for (client in clientMonitor.getClients()){
                         UDPClient().sendMessage(json, client.ip, client.port)
                     }
                 }).start()
