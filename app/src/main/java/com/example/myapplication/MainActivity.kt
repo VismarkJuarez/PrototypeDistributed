@@ -25,7 +25,8 @@ import kotlin.concurrent.schedule
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
-    private var userType:UserType? = null
+    var userType: UserType? = null
+    var userName: String? = null
     private var bitmap: Bitmap? = null
     private var imageview: ImageView? = null
     private var generateConnectionQrButton: Button? = null
@@ -34,9 +35,16 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     val gson = Gson()
     var networkInformation: NetworkInformation? = null
     var activeQuestion: MultipleChoiceQuestion? = null
-    val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
-    val clientTwo = NetworkInformation("10.0.2.2", 5023, "client")
-    val clientThree = NetworkInformation("10.0.2.2", 5026, "client");
+    val clientOne = NetworkInformation("10.0.2.2", 5023, "client")
+    val clientTwo = NetworkInformation("10.0.2.2", 5000, "client")
+    val clientThree = NetworkInformation("10.0.2.2", 5026, "client")
+
+    // The in memory object cache!
+    private val questionRepo = Cache()
+
+    // The actual persisted database!
+    private var repository: RepositoryImpl? = null
+
     val clients = arrayListOf<NetworkInformation>().also{
         it.add(clientOne)
         it.add(clientTwo)
@@ -51,34 +59,36 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     }
 
 
-
-    // The in memory object cache!
-    private val questionRepo = Cache()
-
-    // The actual persisted database!
-    private var repository: RepositoryImpl? = null
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
 
         //TODO: print statements are sloppy. Make a logger.
-        var typeOfUser = intent.getSerializableExtra("EXTRA_USER_TYPE").toString()
-        var userName = getIntent().getStringExtra("EXTRA_USER_NAME")
+        //extracting the userType value. Converting from String to Enum value
+        val userTypeAsString = intent.getSerializableExtra("EXTRA_USER_TYPE").toString()
+        if(UserType.valueOf(userTypeAsString) == UserType.INSTRUCTOR) {
+            userType = UserType.INSTRUCTOR
+        } else if (UserType.valueOf(userTypeAsString) == UserType.STUDENT) {
+            userType = UserType.STUDENT
+        }
+
+        //Extracting the userName value
+        userName = getIntent().getStringExtra("EXTRA_USER_NAME")
 
         println("username: " + userName)
-        println("userType: " + typeOfUser)
+        println("userType: " + userType)
 
         //specify the userType in the UI's label
         var userMetadataTextView: TextView = findViewById(R.id.userMetadata);
-        userMetadataTextView.setText("userType: " + typeOfUser + "\n" + "Username: " + userName)
+        userMetadataTextView.setText("userType: " + userType + "\n" + "Username: " + userName)
 
         imageview = findViewById(R.id.iv)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
         val create_question_button = findViewById<Button>(R.id.create_question)
+        val activateDummyQuestionButton = findViewById<Button>(R.id.activateDummyQuestion)
         networkInformation = NetworkInformation.NetworkInfoFactory.getNetworkInfo(this)
+
         val dataaccess = QuizDatabase.getDatabase(this)
         val answerQuestionButton = findViewById<Button>(R.id.answer_active)
         val responseID = UUID.randomUUID().toString()
@@ -152,13 +162,45 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
             startActivityForResult(intent, 1)
         }
 
+        //TODO Heavy refactoring required. All onClick configurations should be in a separate function.
+        /**
+         * OnClick functionality for the activateDummyQuestionButton.
+         */
+        activateDummyQuestionButton.setOnClickListener{
+            //Create a dummy MultipleChoiceQuestion object's values:
+            val questionId: String = "1234"
+            val prompt: String = "Which is the best NFL Team of all time?"
+            val answerChoices = listOf("Bears", "Patriots", "Seahawks", "Steelers")
+            val answer = "Bears"
+            val quizId = "5678"
+
+            //Create a dummy MultipleChoiceQuestion object
+            val dummyQuestion: MultipleChoiceQuestion1 =  MultipleChoiceQuestion1(
+                quizId, questionId, prompt, answerChoices, answer
+            )
+
+            //Ony the instructor has the power to change the active question
+            if(UserType.INSTRUCTOR.equals(userType)) { //guarding against null userType values
+                println("PERMISSION TO ACTIVATE QUESTION GRANTED, " + userName)
+                activateQuestion("dummyUsername", dummyQuestion)
+            } else {
+                println("YOU DONT HAVE PERMISSION TO ACTIVATE A NEW QUESTION, " + userName)
+            }
+
+        }
+
     }
+
+
+
 
     override fun onUDP(data: String) {
         Thread(Runnable {
             println(data)
             runOnUiThread {
                 Toast.makeText(applicationContext, data, Toast.LENGTH_SHORT).show()
+                //HEREEEEE
+                println("Current Active question is: " + activeQuestion)
             }
             // Debug here. It prints out all questions in the database.
             val type = gson.fromJson(data, Map::class.java)["type"] as String
@@ -174,18 +216,50 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         }).start()
     }
 
+    /**
+     * Iterates through the list of UDP clients and emits a `heartbeat`
+     * toast message in each of the individual devices.
+     */
     private fun emitHeartBeat(){
         println("Emitting heartbeat")
         Thread(Runnable{
             for (client in clients){
                 val heartbeat = HeartBeat(ip = networkInformation!!.ip, port = networkInformation!!.port.toString())
-
-                println(networkInformation!!.ip + " " + networkInformation!!.port.toString())
-
                 UDPClient().sendMessage(gson.toJson(heartbeat), client.ip, client.port)
             }
         }).start()
     }
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Will activate a specified question, prompting all clients to answer it.
+     */
+    private fun activateQuestion(instructorUserName: String, questionToActivate: MultipleChoiceQuestion1) {
+        println("ABOUT TO ACTIVATE THE FOLLOWING QUESTION: " + questionToActivate)
+        for(client in clients) {
+            //Propagate the newly-activated question for this specific client
+            UDPClient().activateQuestion(instructorUserName, client.ip, client.port, questionToActivate)
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
     override fun onHeartBeat(heartBeat: HeartBeat) {
         clientMonitor[NetworkInformation(heartBeat.ip, heartBeat.port.toInt(), "client")] = "Yellow"
