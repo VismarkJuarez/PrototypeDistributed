@@ -3,26 +3,34 @@ package com.example.myapplication
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Bitmap
-import android.net.wifi.WifiManager
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.net.wifi.WifiManager
 import android.widget.*
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
 import com.example.myapplication.DAOs.RepositoryImpl
 import com.example.myapplication.Models.*
-import com.google.zxing.WriterException
-import com.example.myapplication.Networking.*
+import com.example.myapplication.Networking.NetworkInformation
+import com.example.myapplication.Networking.UDPClient
+import com.example.myapplication.Networking.UDPListener
+import com.example.myapplication.Networking.UDPServer
 import com.google.gson.Gson
+import com.google.zxing.WriterException
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.schedule
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.schedule
+
 
 // https://demonuts.com/kotlin-generate-qr-code/ was used for the basis of  QRCode generation and used pretty much all of the code for the QR methods. Great thanks to the authors!
 class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
-
+    private var userType:UserType? = null
+    private var bitmap: Bitmap? = null
+    private var imageview: ImageView? = null
+    private var generateConnectionQrButton: Button? = null
     val converter = GSONConverter()
     val gson = Gson()
     val debug = true
@@ -30,9 +38,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     var networkInformation: NetworkInformation?= null
     var activeQuestion: MultipleChoiceQuestion? = null
     val clientOne = NetworkInformation("10.0.2.2", 5000, "client")
-    val clientTwo = NetworkInformation("10.0.2.2", 5023, "server")
-    val clientMonitor = ClientMonitor(arrayListOf(clientOne, clientTwo))
-
+    val clientTwo = NetworkInformation("10.0.2.2", 5023, "client")
+    val clientThree = NetworkInformation("10.0.2.2", 5026, "client");
+    val clientMonitor = ClientMonitor(arrayListOf(clientOne, clientTwo, clientThree))
 
 
     // The in memory object cache!
@@ -44,10 +52,24 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
+
+        //TODO: print statements are sloppy. Make a logger.
+        var typeOfUser = intent.getSerializableExtra("EXTRA_USER_TYPE").toString()
+        var userName = getIntent().getStringExtra("EXTRA_USER_NAME")
+
+        println("username: " + userName)
+        println("userType: " + typeOfUser)
+
+        //specify the userType in the UI's label
+        var userMetadataTextView: TextView = findViewById(R.id.userMetadata);
+        userMetadataTextView.setText("userType: " + typeOfUser + "\n" + "Username: " + userName)
+
         var bitmap: Bitmap? = null
         var imageview = findViewById<ImageView>(R.id.iv)
         val generateConnectionQrButton = findViewById<Button>(R.id.generate_connection_qr_button)
+
         val create_question_button = findViewById<Button>(R.id.create_question)
         val answerQuestionButton = findViewById<Button>(R.id.answer_active)
         val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
@@ -130,7 +152,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
 
         Timer("Heartbeat", false).schedule(100, 5000){
-          emitHeartBeat()
+            emitHeartBeat()
         }
 
 
@@ -171,6 +193,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     private fun emitHeartBeat(){
         println("Emitting heartbeat")
         Thread(Runnable{
+
             for (client in clientMonitor.getClients()) {
                 val status = clientMonitor.getClient(client)
                 if (status?.other_client_failure_count!!.get() >= clientMonitor.getClients().size/2){
@@ -182,7 +205,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                     peer_type = networkInformation!!.type
                 )
                 // DEBUG if the heartbeat is going to be sent to the server then actually send it out to "10.0.2.2" Change this to client.ip in prod
-                println(clientMonitor)
+                //println(clientMonitor) TODO: Uncommend -- make log message
                 if (debug == true) {
                     if (client == clientTwo) {
                         UDPClient().sendMessage(gson.toJson(heartbeat), "10.0.2.2", client.port)
@@ -208,7 +231,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                         runOnUiThread{
                             Toast.makeText(applicationContext,"Failure detected at $client", Toast.LENGTH_SHORT).show()
                         }
-                        }
+                    }
                 }
                 status.last_received.getAndIncrement()
             }
