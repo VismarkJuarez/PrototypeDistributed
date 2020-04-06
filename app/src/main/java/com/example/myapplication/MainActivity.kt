@@ -221,19 +221,31 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         var ip = heartBeat.ip
         var port = heartBeat.port.toInt()
         var peerType = heartBeat.peer_type
-        if (debug){
+        if (debug) {
             ip = "10.0.2.2"
             port = 5000
-            if (heartBeat.ip == "10.0.2.18"){
+            if (heartBeat.ip == "10.0.2.18") {
                 port = 5023
             }
         }
         val client = clientMonitor.getClient(NetworkInformation(ip, port, peerType))
 
 
-        if (client != null){
+        if (client != null) {
             client.color = "green"
             client.last_received.getAndSet(0)
+            if (client.other_client_failure_count.toInt() > 0) {
+                val data = hashMapOf<String, String>()
+                Thread(Runnable {
+                    for (clientTwo in clientMonitor.getClients()) {
+                        data.put("type", "connection_restored")
+                        data.put("ip", heartBeat.ip)
+                        data.put("port", heartBeat.port)
+                        data.put("type", heartBeat.type)
+                    }
+                    UDPClient().sendMessage(gson.toJson(data), clientTwo.ip, clientTwo.port)
+                }).start()
+            }
         }
     }
 
