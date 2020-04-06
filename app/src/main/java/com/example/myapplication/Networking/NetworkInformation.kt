@@ -8,8 +8,8 @@ import java.util.*
 
 data class NetworkInformation (
     val ip: String,
-    val port: Int,
-    val type: String
+    var port: Int,
+    var type: String
 ) {
     companion object NetworkInfoFactory{
 
