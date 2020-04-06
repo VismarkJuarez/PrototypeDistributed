@@ -36,9 +36,12 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     val gson = Gson()
     var networkInformation: NetworkInformation? = null
     var activeQuestion: MultipleChoiceQuestion? = null
+    var currentActiveQuestion: MultipleChoiceQuestion1? = null
     val clientOne = NetworkInformation("10.0.2.2", 5023, "client")
     val clientTwo = NetworkInformation("10.0.2.2", 5000, "client")
     val clientThree = NetworkInformation("10.0.2.2", 5026, "client")
+
+    //var currentActiveQuestionTextView: TextView = findViewById(R.id.currentActiveQuestionTextView)
 
     // The in memory object cache!
     private val questionRepo = Cache()
@@ -83,6 +86,9 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         //specify the userType in the UI's label
         var userMetadataTextView: TextView = findViewById(R.id.userMetadata);
         userMetadataTextView.setText("userType: " + userType + "\n" + "Username: " + userName)
+
+        //specify the active question in the UI (will be null initially)
+        //currentActiveQuestionTextView.setText("Active Question: " + currentActiveQuestion)
 
         imageview = findViewById(R.id.iv)
         generateConnectionQrButton = findViewById(R.id.generate_connection_qr_button)
@@ -194,33 +200,39 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
     }
 
 
-
-
+    /**
+     * Handles the receipt and filtering of various message types
+     */
     override fun onUDP(data: String) {
         Thread(Runnable {
             println(data)
             runOnUiThread {
                 Toast.makeText(applicationContext, data, Toast.LENGTH_SHORT).show()
-                //HEREEEEE
-                println("Current Active question is: " + activeQuestion)
+                println("Current Active question is: " + currentActiveQuestion)
             }
+
             // Debug here. It prints out all questions in the database.
+            println("Received the following data: " + data)
 
-            println("Received data: " + data)
-
-            val jsonData = gson.fromJson(data, MultipleChoiceQuestion1::class.java)
-            val type = jsonData.type
-
-            println("type: " + type)
-
-            //val type = gson.fromJson(data, Map::class.java)["type"] as String
-
+            //First, extract the 'type' from the data's payload to determine downward processing
+            val type = gson.fromJson(data, Map::class.java)["type"] as String
             val message = converter.convertToClass(type, data)
-            println(message)
+
+            /**
+             * Defines the logic for when the received data relates to a multiple choice question.
+             * More specifically, this `if` block updates the `currentActiveQuestion` value for
+             * all clients, and updates the clients' UI's to reflect this change.
+             */
             if ("multiple_choice_question" == type){
-                println("SUCCESSSSSSSS")
-//                activeQuestion = message as MultipleChoiceQuestion
-//                println("Activating a question!")
+                val multipleChoiceQuestion = gson.fromJson(data, MultipleChoiceQuestion1::class.java)
+                currentActiveQuestion = multipleChoiceQuestion
+
+                //Updating the `activeQuestionTextView` with the new currentActiveQuestion as
+                //a visual verification that the `currentActiveQuestion` has, in fact, been
+                //updated.
+
+                //currentActiveQuestionTextView.setText("Active Question: " + currentActiveQuestion)
+                println("A new Multiple Choice question has been activated!")
             }
             if ("hb" == type){
                 onHeartBeat(message as HeartBeat)
@@ -241,10 +253,6 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
             }
         }).start()
     }
-
-
-
-
 
 
     /**
