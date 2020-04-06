@@ -1,12 +1,10 @@
 package com.example.myapplication
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.net.wifi.WifiManager
 import android.widget.*
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
@@ -19,9 +17,6 @@ import com.example.myapplication.Networking.UDPServer
 import com.google.gson.Gson
 import com.google.zxing.WriterException
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.schedule
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.schedule
 
 
