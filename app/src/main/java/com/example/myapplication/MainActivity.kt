@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
 import com.example.myapplication.DAOs.Cache
 import com.example.myapplication.DAOs.QuizDatabase
@@ -94,6 +95,7 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
         val responseID = UUID.randomUUID().toString()
         val browseQuestionsButton = findViewById<Button>(R.id.browse_questions)
         repository = RepositoryImpl(dataaccess.questionDao(), dataaccess.responseDao(), dataaccess.userDao(), dataaccess.quizDao())
+
         Timer("Heartbeat", false).schedule(100, 30000){
           emitHeartBeat()
         }
@@ -203,14 +205,24 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
                 println("Current Active question is: " + activeQuestion)
             }
             // Debug here. It prints out all questions in the database.
-            val type = gson.fromJson(data, Map::class.java)["type"] as String
+
+            println("Received data: " + data)
+
+            val jsonData = gson.fromJson(data, MultipleChoiceQuestion1::class.java)
+            val type = jsonData.type
+
+            println("type: " + type)
+
+            //val type = gson.fromJson(data, Map::class.java)["type"] as String
+
             val message = converter.convertToClass(type, data)
             println(message)
-            if (type == "multiple_choice_question"){
-                activeQuestion = message as MultipleChoiceQuestion
-                println("Activating a question!")
+            if ("multiple_choice_question" == type){
+                println("SUCCESSSSSSSS")
+//                activeQuestion = message as MultipleChoiceQuestion
+//                println("Activating a question!")
             }
-            if (type == "hb"){
+            if ("hb" == type){
                 onHeartBeat(message as HeartBeat)
             }
         }).start()
@@ -235,18 +247,23 @@ class MainActivity : AppCompatActivity(), UDPListener, HeartBeatListener {
 
 
 
-
-
-
-
     /**
      * Will activate a specified question, prompting all clients to answer it.
      */
     private fun activateQuestion(instructorUserName: String, questionToActivate: MultipleChoiceQuestion1) {
         println("ABOUT TO ACTIVATE THE FOLLOWING QUESTION: " + questionToActivate)
         for(client in clients) {
-            //Propagate the newly-activated question for this specific client
-            UDPClient().activateQuestion(instructorUserName, client.ip, client.port, questionToActivate)
+            //spin up a new thread for each client connection
+            val thread = Thread(Runnable {
+                try {
+                    //Propagate the newly-activated question for this specific client
+                    UDPClient().activateQuestion(instructorUserName, client.ip, client.port, questionToActivate)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            })
+
+            thread.start()
         }
     }
 

@@ -37,21 +37,21 @@ class UDPClient: Client {
     override fun activateQuestion(instructorUserName: String, host: String, port: Int,
                                   questionToActivate: MultipleChoiceQuestion1) {
         val socket = DatagramSocket()
-        log.info("activateQuestion function received the an `activateQuestion` request from: "
+        log.info("activateQuestion function received an `activateQuestion` request from: "
                     + instructorUserName + " For the question: " + questionToActivate)
 
         val questionAsString = questionToActivate.toString()
 
         val questionToActivateAsByteArray = questionAsString.toByteArray(Charsets.UTF_8)
-        val data = instructorUserName.toByteArray(Charsets.UTF_8)
 
         try {
-            val packet = DatagramPacket(data, data.size, InetAddress.getByName(host), port)
+            //preparing the UDP packet for sending
+            val packet = DatagramPacket(questionToActivateAsByteArray, questionToActivateAsByteArray.size, InetAddress.getByName(host), port)
 
             log.info("Attempting to send the packet to the following host and port: " + host + " " + port)
             socket.send(packet) //error here
 
-            log.info("question has been propagated to client " + host + " at port " + port)
+            log.info("The following question has been propagated to client " + questionAsString + " " + host + " at port " + port)
         } catch (e: Exception) {
             println(e.toString())
             e.printStackTrace()
