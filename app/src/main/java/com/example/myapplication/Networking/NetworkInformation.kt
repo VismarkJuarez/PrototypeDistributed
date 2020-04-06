@@ -13,11 +13,11 @@ data class NetworkInformation (
 ) {
     companion object NetworkInfoFactory{
 
-        fun getNetworkInfo(context: Context): NetworkInformation{
+        fun getNetworkInfo(context: Context, port: Int = 5000, type: String = "client"): NetworkInformation{
             val wifiManager = context.getSystemService(WIFI_SERVICE) as WifiManager
             val ip = Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
 
-            return NetworkInformation(ip, 6000, "quiz_server")
+            return NetworkInformation(ip, port = port, type = type)
         }
     }
 }
