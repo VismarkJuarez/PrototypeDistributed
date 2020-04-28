@@ -1,6 +1,9 @@
 
 # App Walkthrough
-[<img src="resources/multipleEmulators.png" width="50%">](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
+<video width="320" height="240" controls>
+  <source src="resources/walkthrough.mp4" type="video/mp4">
+</video>
 
 
 # Running the Application via an Emulator
