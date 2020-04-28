@@ -1,6 +1,7 @@
 
 # App Walkthrough
-[![Final Project Video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+[<img src="resources/multipleEmulators.png" width="50%">](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
 
 # Running the Application via an Emulator
 
