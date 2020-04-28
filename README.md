@@ -1,3 +1,7 @@
+
+# App Walkthrough
+[![Final Project Video](https://www.youtube.com/watch?v=dQw4w9WgXcQ)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+
 # Running the Application via an Emulator
 
 ### Configuring Emulator Port-Forwarding on MacOSX:
